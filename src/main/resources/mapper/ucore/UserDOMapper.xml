@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weidai.dataMigration.dal.ucore.UserDOMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.ucore.facade.domain.UserDO">
+        <id column="id" property="id" />
+        <result column="nick_name" property="nickName" />
+        <result column="id_number" property="idNumber" />
+        <result column="cert_no" property="certNo" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="user_name" property="userName" />
+        <result column="login_name" property="loginName" />
+        <result column="head_photo" property="headPhoto" />
+        <result column="mobile" property="mobile" />
+        <result column="mobile_status" property="mobileStatus" />
+        <result column="email" property="email" />
+        <result column="email_status" property="emailStatus" />
+        <result column="real_status" property="realStatus" />
+        <result column="real_status_time" property="realStatusTime" />
+        <result column="login_status" property="loginStatus" />
+        <result column="gender" property="gender" />
+        <result column="birthday" property="birthday" />
+        <result column="nation" property="nation" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="area" property="area" />
+        <result column="age" property="age" />
+        <result column="volk" property="volk" />
+        <result column="gmt_create" property="createTime" />
+        <result column="gmt_modified" property="modifiedTime" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, nick_name, id_number, cert_no, id_card_type, user_name, login_name,
+        head_photo, mobile, mobile_status, email, email_status, real_status, real_status_time,
+        login_status, gender, birthday, nation, province, city, area, age, volk, gmt_create,
+        gmt_modified
+    </sql>
+    <insert id="insertBatchWithId" parameterType="com.weidai.ucore.facade.domain.UserDO">
+        insert into u_user(
+          id, nick_name, id_number, cert_no, id_card_type, user_name,
+          login_name, head_photo, mobile, mobile_status, email, email_status,
+          real_status, real_status_time, login_status, gender, birthday, nation,
+          province, city, area, age, volk, gmt_create, gmt_modified
+        ) values
+        <foreach collection="userList" item="userDO" index="index" separator=",">
+            (#{userDO.id}, #{userDO.nickName}, #{userDO.idNumber}, #{userDO.certNo}, #{userDO.idCardType},
+            #{userDO.userName}, #{userDO.loginName}, #{userDO.headPhoto}, #{userDO.mobile}, #{userDO.mobileStatus},
+            #{userDO.email}, #{userDO.emailStatus}, #{userDO.realStatus}, #{userDO.realStatusTime}, #{userDO.loginStatus},
+            #{userDO.gender}, #{userDO.birthday}, #{userDO.nation}, #{userDO.province}, #{userDO.city}, #{userDO.area},
+            #{userDO.age}, #{userDO.volk}, #{userDO.createTime}, #{userDO.modifiedTime})
+        </foreach>
+    </insert>
+</mapper>

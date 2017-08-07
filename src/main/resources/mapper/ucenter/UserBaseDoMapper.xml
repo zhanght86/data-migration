@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.dataMigration.domain.UserBaseDo">
+        <id column="UID" property="uid" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="LOGIN_NAME" property="loginName" jdbcType="VARCHAR"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="PASSWORD" property="password" jdbcType="VARCHAR"/>
+        <result column="SALT" property="salt" jdbcType="VARCHAR"/>
+        <result column="PAYPASS" property="paypass" jdbcType="VARCHAR"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="ID_NUMBER" property="idNumber" jdbcType="VARCHAR"/>
+        <result column="REAL_STATUS" property="realStatus" jdbcType="INTEGER"/>
+        <result column="REAL_STATUS_TIME" property="realStatusTime" jdbcType="TIMESTAMP"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="EMERGENCY_NAME" property="emergencyName" jdbcType="VARCHAR"/>
+        <result column="EMERGENCY_MOBILE" property="emergencyMobile" jdbcType="VARCHAR"/>
+        <result column="MOBILE_STATUS" property="mobileStatus" jdbcType="INTEGER"/>
+        <result column="MARRIAGE" property="marriage" jdbcType="INTEGER"/>
+        <result column="EDUCATION" property="education" jdbcType="VARCHAR"/>
+        <result column="EMAIL" property="email" jdbcType="VARCHAR"/>
+        <result column="EMAIL_STATUS" property="emailStatus" jdbcType="INTEGER"/>
+        <result column="SEX" property="sex" jdbcType="INTEGER"/>
+        <result column="HEADPHOTO" property="headphoto" jdbcType="VARCHAR"/>
+        <result column="BIRTHDAY" property="birthday" jdbcType="VARCHAR"/>
+        <result column="NATION" property="nation" jdbcType="VARCHAR"/>
+        <result column="PROVINCE" property="province" jdbcType="VARCHAR"/>
+        <result column="CITY" property="city" jdbcType="VARCHAR"/>
+        <result column="AREA" property="area" jdbcType="VARCHAR"/>
+        <result column="LOGIN_TIME" property="loginTime" jdbcType="TIMESTAMP"/>
+        <result column="LOGIN_NUMBER" property="loginNumber" jdbcType="INTEGER"/>
+        <result column="ISHAVE" property="ishave" jdbcType="INTEGER"/>
+        <result column="CONTENT" property="content" jdbcType="VARCHAR"/>
+        <result column="ADD_IP" property="addIp" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER"/>
+        <result column="WAY" property="way" jdbcType="INTEGER"/>
+        <result column="UID_SALE" property="uidSale" jdbcType="INTEGER"/>
+        <result column="AGE" property="age" jdbcType="INTEGER"/>
+        <result column="OCCUPATION" property="occupation" jdbcType="VARCHAR"/>
+        <result column="ANNUAL_INCOME" property="annualIncome" jdbcType="VARCHAR"/>
+        <result column="SAFE_PAY_PASSWORD" property="safePayPassword" jdbcType="INTEGER"/>
+        <result column="GUID" property="gUid" jdbcType="INTEGER"/>
+        <result column="DEPOSITORY_STATUS" property="depositoryStatus" jdbcType="INTEGER"/>
+        <result column="user_type" property="userType" jdbcType="INTEGER"/>
+        <result column="civil_subject_type" property="civilSubjectType" jdbcType="INTEGER"/>
+        <result column="id_card_type" property="idCardType" jdbcType="INTEGER"/>
+        <result column="cert_no" property="certNo" jdbcType="VARCHAR"/>
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR"/>
+        <result column="is_personal" property="isPersonal" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        u.UID, u.CREATE_TIME, u.LOGIN_NAME, u.USER_NAME, u.PASSWORD, u.SALT, u.PAYPASS, u.UPDATE_TIME,
+        u.ID_NUMBER, u.REAL_STATUS, u.REAL_STATUS_TIME, u.MOBILE,
+        u.EMERGENCY_NAME, u.EMERGENCY_MOBILE, u.MOBILE_STATUS, u.MARRIAGE, u.EDUCATION,
+        u.EMAIL, u.EMAIL_STATUS, u.SEX, u.HEADPHOTO, u.QQ, u.WANGWANG, u.BIRTHDAY, u.NATION, u.PROVINCE, u.CITY,
+        u.AREA, u.LOGIN_TIME, u.LOGIN_NUMBER, u.ISHAVE,
+        u.CONTENT, u.ADD_IP, u.STATUS, u.WAY, u.UID_SALE, u.AGE, u.OCCUPATION, u.ANNUAL_INCOME, u.SAFE_PAY_PASSWORD,
+        u.GUID, u.DEPOSITORY_STATUS, u.user_type, u.civil_subject_type, u.id_card_type, u.cert_no, u.nick_name, u.is_personal
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from u_base
+        where UID = #{uid,jdbcType=INTEGER}
+    </select>
+
+    <select id="listByPage">
+        select
+        <include refid="Base_Column_List"/>
+        from u_base u
+        where u.mobile in(
+            select mm.mobile from
+            (select mobile from u_base order by mobile limit #{_skiprows}, #{_pagesize}) mm
+        )
+    </select>
+</mapper>

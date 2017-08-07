@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    druid:
+      initial-size: 1
+      max-active: 20
+      min-idle: 1
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 'x'
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: false
+      max-open-prepared-statements: -1
+      ucenter:
+        url: jdbc:mysql://192.168.20.40:3306/wdw?useUnicode=true&characterEncoding=UTF-8
+        username: myuser
+        password: Mypwd123!
+      ucore:
+        url: jdbc:mysql://192.168.20.40:3306/ucenter?useUnicode=true&characterEncoding=UTF-8
+        username: devucenter
+        password: DEVucenter123!

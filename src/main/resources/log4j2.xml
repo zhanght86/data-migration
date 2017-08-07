@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="300">
+	<properties>
+		<property name="LOG_HOME">logs</property>
+	</properties>
+	
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{MMdd HH:mm:ss.SSS} %-5level] [%t] %c{3}:%L %msg%n"/>
+		</Console>
+
+		<RollingRandomAccessFile name="debug_log" fileName="${LOG_HOME}/ucore_debug.log" filePattern="${LOG_HOME}/ucore_debug-%d{yyyy-MM-dd}-%i.log">
+			<Filters>
+				<ThresholdFilter level="info" onMatch="DENY" onMismatch="NEUTRAL"/>
+				<ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<PatternLayout pattern="[%d{MMdd HH:mm:ss.SSS} %-5level] [%t] %c{3}:%L %msg%n"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy/>
+				<SizeBasedTriggeringPolicy size="100MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20"/>
+		</RollingRandomAccessFile>
+
+		<RollingRandomAccessFile name="info_log" fileName="${LOG_HOME}/ucore_info.log" filePattern="${LOG_HOME}/ucore_info-%d{yyyy-MM-dd}-%i.log">
+			<Filters>
+				<ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+				<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<PatternLayout pattern="[%d{MMdd HH:mm:ss.SSS} %-5level] [%t] %c{3}:%L %msg%n"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy/>
+				<SizeBasedTriggeringPolicy size="100MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20"/>
+		</RollingRandomAccessFile>
+		
+		<RollingRandomAccessFile name="warn_log" fileName="${LOG_HOME}/ucore_warn.log" filePattern="${LOG_HOME}/ucore_warn-%d{yyyy-MM-dd}-%i.log">
+			<Filters>
+				<ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+				<ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<PatternLayout pattern="[%d{MMdd HH:mm:ss.SSS} %-5level] [%t] %c{3}:%L %msg%n"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20"/>
+		</RollingRandomAccessFile>
+		
+		<RollingRandomAccessFile name="error_log" fileName="${LOG_HOME}/ucore_error.log" filePattern="${LOG_HOME}/ucore_error-%d{yyyy-MM-dd}-%i.log">
+			<Filters>
+				<ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="[%d{MMdd HH:mm:ss.SSS} %-5level] [%t] %c{3}:%L %msg%n"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy/>
+				<SizeBasedTriggeringPolicy size="100MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20"/>
+		</RollingRandomAccessFile>
+	</Appenders>
+
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="console"/>
+			<AppenderRef ref="debug_log"/>
+			<AppenderRef ref="info_log"/>
+			<AppenderRef ref="warn_log"/>
+			<AppenderRef ref="error_log"/>
+		</Root>
+	</Loggers>
+</Configuration>

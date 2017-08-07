@@ -1,0 +1,10 @@
+/**
+ * Copyright (C), 2011-2017, 微贷网.
+ */
+package com.weidai.dataMigration.dal.ucenter;
+
+/**
+ * @author wuqi 2017/8/7 0007.
+ */
+public interface UserRoleInfoDoMapper {
+}
