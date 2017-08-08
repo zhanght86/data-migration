@@ -3,7 +3,7 @@
  */
 package com.weidai.dataMigration.dal.ucenter;
 
-import com.weidai.dataMigration.domain.RoleInfoDTO;
+import com.weidai.dataMigration.domain.BorrowerDo;
 
 import java.util.List;
 import java.util.Set;
@@ -11,6 +11,6 @@ import java.util.Set;
 /**
  * @author wuqi 2017/8/7 0007.
  */
-public interface UserRoleInfoDoMapper {
-    List<RoleInfoDTO> selectRoleInfoIn(Set<Integer> uids);
+public interface BorrowerDoMapper {
+    List<BorrowerDo> selectBorrowerIn(Set<Integer> borrowerIds);
 }
