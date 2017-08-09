@@ -1,7 +1,5 @@
 package com.weidai.dataMigration.domain;
 
-import java.util.Date;
-
 public class TenderDo {
     private Integer id;
 
@@ -10,14 +8,6 @@ public class TenderDo {
     private Integer uidCus;
 
     private Integer cid;
-
-    private Integer autoBidNum;
-
-    private Integer setBidAutoNum;
-
-    private Integer cidBelong;
-
-    private Date lastModfityTime;
 
     private Integer riskEvaluationScore;
 
@@ -53,38 +43,6 @@ public class TenderDo {
 
     public void setCid(Integer cid) {
         this.cid = cid;
-    }
-
-    public Integer getAutoBidNum() {
-        return autoBidNum;
-    }
-
-    public void setAutoBidNum(Integer autoBidNum) {
-        this.autoBidNum = autoBidNum;
-    }
-
-    public Integer getSetBidAutoNum() {
-        return setBidAutoNum;
-    }
-
-    public void setSetBidAutoNum(Integer setBidAutoNum) {
-        this.setBidAutoNum = setBidAutoNum;
-    }
-
-    public Integer getCidBelong() {
-        return cidBelong;
-    }
-
-    public void setCidBelong(Integer cidBelong) {
-        this.cidBelong = cidBelong;
-    }
-
-    public Date getLastModfityTime() {
-        return lastModfityTime;
-    }
-
-    public void setLastModfityTime(Date lastModfityTime) {
-        this.lastModfityTime = lastModfityTime;
     }
 
     public Integer getRiskEvaluationScore() {

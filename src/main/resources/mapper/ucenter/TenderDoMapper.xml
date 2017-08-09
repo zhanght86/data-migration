@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.weidai.dataMigration.dal.ucenter.TenderDoMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.dataMigration.domain.TenderDo" >
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="UID" property="uid" jdbcType="INTEGER" />
+        <result column="UID_CUS" property="uidCus" jdbcType="INTEGER" />
+        <result column="CID" property="cid" jdbcType="INTEGER" />
+        <result column="risk_evaluation_score" property="riskEvaluationScore" jdbcType="INTEGER" />
+        <result column="risk_evaluation_type" property="riskEvaluationType" jdbcType="INTEGER" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+        ID, UID, UID_CUS, CID,
+        risk_evaluation_score, risk_evaluation_type
+    </sql>
+    <select id="selectTenderIn" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from u_tender
+        where uid in
+        <foreach collection="uidSet" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+</mapper>

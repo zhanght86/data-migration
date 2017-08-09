@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weidai.dataMigration.dal.ucore.UserExtendDOMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.ucore.facade.domain.UserExtendDO">
+        <id column="user_id" property="userId"/>
+        <result column="house_addr" property="houseAddr"/>
+        <result column="now_addr" property="nowAddr"/>
+        <result column="road_addr" property="roadAddr"/>
+        <result column="family_tel" property="familyTel"/>
+        <result column="work_years" property="workYears"/>
+        <result column="annual_income" property="annualIncome"/>
+        <result column="occupation" property="occupation" />
+        <result column="job" property="job"/>
+        <result column="children_situation" property="childrenSituation"/>
+        <result column="house_situation" property="houseSituation"/>
+        <result column="college" property="college"/>
+        <result column="local_household" property="localHousehold"/>
+        <result column="alipay_cert" property="alipayCert"/>
+        <result column="house_info" property="houseInfo"/>
+        <result column="estate_desc" property="estateDesc"/>
+        <result column="car_desc" property="carDesc"/>
+        <result column="car_info" property="carInfo"/>
+        <result column="other_estate" property="otherEstate"/>
+        <result column="asset_situation" property="assetSituation"/>
+        <result column="month_spend" property="monthSpend"/>
+        <result column="marriage" property="marriage"/>
+        <result column="education" property="education"/>
+        <result column="emergency_name" property="emergencyName"/>
+        <result column="emergency_mobile" property="emergencyMobile"/>
+        <result column="comp_name" property="compName"/>
+        <result column="comp_tel" property="compTel"/>
+        <result column="comp_addr" property="compAddr"/>
+        <result column="comp_type" property="compType"/>
+        <result column="industry_category" property="industryCategory"/>
+        <result column="payoff_form" property="payoffForm"/>
+        <result column="work_type" property="workType"/>
+        <result column="dept" property="dept"/>
+        <result column="postcode" property="postcode"/>
+        <result column="administrative_level" property="administrativeLevel"/>
+        <result column="id_card_validity" property="idCardValidity"/>
+        <result column="now_address_province" property="nowAddressProvince"/>
+        <result column="now_address_city" property="nowAddressCity"/>
+        <result column="company_address_province" property="companyAddressProvince"/>
+        <result column="company_address_city" property="companyAddressCity"/>
+        <result column="company_postcode" property="companyPostcode"/>
+        <result column="job_level" property="jobLevel"/>
+        <result column="gmt_create" property="createTime" />
+        <result column="gmt_modified" property="modifiedTime" />
+    </resultMap>
+    <insert id="insertBatchWithUserId" parameterType="com.weidai.ucore.facade.domain.UserExtendDO">
+        insert into
+        u_user_extend(user_id, house_addr, now_addr,
+            road_addr, family_tel, work_years,
+            annual_income, occupation, job,
+            children_situation, house_situation, college,
+            local_household, alipay_cert, house_info,
+            estate_desc, car_desc, car_info,
+            other_estate, asset_situation, month_spend,
+            marriage, education, emergency_name,
+            emergency_mobile, comp_name, comp_tel,
+            comp_addr, comp_type, industry_category,
+            payoff_form, work_type, dept,
+            postcode, administrative_level, id_card_validity,
+            now_address_province, now_address_city, company_address_province,
+            company_address_city, company_postcode, job_level, gmt_create,
+            gmt_modified)
+        values
+        <foreach collection="userExtendList" item="userExtend" index="index" separator=",">
+            (#{userExtend.userId}, #{userExtend.houseAddr}, #{userExtend.nowAddr},
+            #{userExtend.roadAddr}, #{userExtend.familyTel}, #{userExtend.workYears},
+            #{userExtend.annualIncome}, #{userExtend.occupation}, #{userExtend.job},
+            #{userExtend.childrenSituation}, #{userExtend.houseSituation}, #{userExtend.college},
+            #{userExtend.localHousehold}, #{userExtend.alipayCert}, #{userExtend.houseInfo},
+            #{userExtend.estateDesc}, #{userExtend.carDesc}, #{userExtend.carInfo},
+            #{userExtend.otherEstate}, #{userExtend.assetSituation}, #{userExtend.monthSpend},
+            #{userExtend.marriage}, #{userExtend.education}, #{userExtend.emergencyName},
+            #{userExtend.emergencyMobile}, #{userExtend.compName}, #{userExtend.compTel},
+            #{userExtend.compAddr}, #{userExtend.compType}, #{userExtend.industryCategory},
+            #{userExtend.payoffForm}, #{userExtend.workType}, #{userExtend.dept},
+            #{userExtend.postcode}, #{userExtend.administrativeLevel}, #{userExtend.idCardValidity},
+            #{userExtend.nowAddressProvince}, #{userExtend.nowAddressCity}, #{userExtend.companyAddressProvince},
+            #{userExtend.companyAddressCity}, #{userExtend.companyPostcode}, #{userExtend.jobLevel},
+            #{userExtend.createTime}, #{userExtend.modifiedTime})
+        </foreach>
+    </insert>
+</mapper>

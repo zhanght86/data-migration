@@ -10,6 +10,8 @@ import java.util.Date;
  */
 public class RoleInfoDTO {
 
+    private Integer id;
+
     private Integer uid;
 
     private Integer userRegisterType;
@@ -19,6 +21,14 @@ public class RoleInfoDTO {
     private String keyword;
 
     private Date regTime;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public Integer getUid() {
         return uid;

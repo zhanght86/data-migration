@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.weidai.dataMigration.dal.ucore.BorrowerInfoDOMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.ucore.facade.domain.BorrowerInfoDO">
+        <id column="id" property="id" />
+        <result column="uid" property="uid" />
+        <result column="purpose" property="purpose" />
+        <result column="borrow_intention" property="borrowIntention" />
+        <result column="wechat_account" property="weChatAccount" />
+        <result column="wechat_bind_time" property="weChatBindTime" />
+        <result column="ci_identification_id" property="ciIdentificationId" />
+        <result column="has_license" property="hasLicense" />
+        <result column="gmt_create" property="createTime" />
+        <result column="gmt_modified" property="modifiedTime" />
+    </resultMap>
+    <insert id="insertBatch" parameterType="com.weidai.ucore.facade.domain.BorrowerInfoDO">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into
+        u_borrower_info(uid, purpose, borrow_intention, wechat_account, wechat_bind_time,
+        ci_identification_id, has_license, gmt_create, gmt_modified)
+        values
+        <foreach collection="borrowerInfoList" item="borrowerInfo" index="index" separator=",">
+            (#{borrowerInfo.uid}, #{borrowerInfo.purpose}, #{borrowerInfo.borrowIntention}, #{borrowerInfo.weChatAccount},
+            #{borrowerInfo.weChatBindTime}, #{borrowerInfo.ciIdentificationId}, #{borrowerInfo.hasLicense}
+            #{borrowerInfo.createTime}, #{borrowerInfo.modifiedTime})
+        </foreach>
+    </insert>
+</mapper>

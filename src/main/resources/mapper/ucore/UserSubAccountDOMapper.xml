@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper>
-    
+<mapper namespace="com.weidai.dataMigration.dal.ucore.UserSubAccountDOMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.ucore.facade.domain.UserSubAccountDO">
+        <id column="uid" property="uid"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_type" property="userType"/>
+        <result column="guid" property="guid"/>
+        <result column="civil_subject_type" property="civilSubjectType"/>
+        <result column="is_depository_acct" property="depositoryAcct"/>
+        <result column="is_personal" property="personal"/>
+        <result column="cid" property="cid"/>
+        <result column="uid_cus" property="uidCus"/>
+        <result column="uid_sale" property="uidSale"/>
+        <result column="wyr_cid" property="wyrCid"/>
+        <result column="gmt_create" property="createTime"/>
+        <result column="gmt_modified" property="modifiedTime"/>
+    </resultMap>
+    <insert id="insertBatchWithUid" parameterType="com.weidai.ucore.facade.domain.UserSubAccountDO">
+        insert into
+        u_sub_account(uid, user_id, user_type, guid,
+            civil_subject_type, is_depository_acct, is_personal,
+            cid, uid_cus, uid_sale, wyr_cid, pay_password,
+            is_safe_pay_password, gmt_create, gmt_modified)
+        values
+        <foreach collection="userSubAccountList" item="userSubAccount" index="index" separator=",">
+            (#{userSubAccount.uid}, #{userSubAccount.userId}, #{userSubAccount.userType}, #{userSubAccount.guid},
+            #{userSubAccount.civilSubjectType}, #{userSubAccount.depositoryAcct}, #{userSubAccount.personal},
+            #{userSubAccount.cid}, #{userSubAccount.uidCus}, #{userSubAccount.uidSale}, #{userSubAccount.wyrCid},
+            #{userSubAccount.payPassword}, #{userSubAccount.safePayPassword},
+            #{userSubAccount.createTime}, #{userSubAccount.modifiedTime})
+        </foreach>
+    </insert>
 </mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.weidai.dataMigration.dal.ucenter.UserRoleInfoDoMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.dataMigration.domain.RoleInfoDTO" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="uid" property="uid" jdbcType="INTEGER" />
+        <result column="user_register_type" property="userRegisterType" jdbcType="INTEGER" />
+        <result column="channel_code" property="channelCode"/>
+        <result column="keyword" property="keyword" jdbcType="VARCHAR" />
+        <result column="create_time" property="regTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+        r.id, r.uid, r.user_register_type, ch.channel_code, r.keyword, r.create_time
+    </sql>
+    <select id="selectRoleInfoIn" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from u_role_info r join u_channel_info ch
+        on r.id = ch.role_id
+        where r.uid in
+        <foreach collection="uidSet" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+</mapper>

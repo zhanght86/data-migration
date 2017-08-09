@@ -7,11 +7,10 @@ import com.weidai.dataMigration.dal.ucenter.BorrowerDoMapper;
 import com.weidai.dataMigration.dal.ucenter.TenderDoMapper;
 import com.weidai.dataMigration.dal.ucenter.UserBaseExtendDoMapper;
 import com.weidai.dataMigration.dal.ucenter.UserRoleInfoDoMapper;
-import com.weidai.dataMigration.dal.ucore.UserDOMapper;
-import com.weidai.dataMigration.dal.ucore.UserExtendDOMapper;
-import com.weidai.dataMigration.dal.ucore.UserSubAccountDOMapper;
+import com.weidai.dataMigration.dal.ucore.*;
 import com.weidai.dataMigration.domain.*;
 import com.weidai.ucore.facade.constant.UserTypeEnum;
+import com.weidai.ucore.facade.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +40,25 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
     private UserBaseExtendDoMapper userBaseExtendDoMapper;
 
     @Autowired
+    private LoginStatusDOMapper loginStatusDOMapper;
+
+    @Autowired
     private UserRoleInfoDoMapper userRoleInfoDoMapper;
+
+    @Autowired
+    private RegisterInfoDOMapper registerInfoDOMapper;
 
     @Autowired
     private BorrowerDoMapper borrowerDoMapper;
 
     @Autowired
     private TenderDoMapper tenderDoMapper;
+
+    @Autowired
+    private TenderInfoDOMapper tenderInfoDOMapper;
+
+    @Autowired
+    private BorrowerInfoDOMapper borrowerInfoDOMapper;
 
     @Override
     @Transactional(value = "ucoreTM")
@@ -64,9 +75,11 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
                 userMap.get(userBaseDo.getMobile()).getUserBaseList().add(userBaseDo);
                 if (UserTypeEnum.U_BORROWER.getCode().equals(userBaseDo.getUserType())) {
                     userMap.get(userBaseDo.getMobile()).setBorrowerUid(userBaseDo.getUid());
+                    userMap.get(userBaseDo.getMobile()).setBorrowerUserBaseDo(userBaseDo);
                     borrowerIds.add(userBaseDo.getUid());
                 } else if (UserTypeEnum.U_TENDER.getCode().equals(userBaseDo.getUserType())) {
                     userMap.get(userBaseDo.getMobile()).setTenderUid(userBaseDo.getUid());
+                    userMap.get(userBaseDo.getMobile()).setTenderUserBaseDo(userBaseDo);
                     userMap.get(userBaseDo.getMobile()).setLoginName(userBaseDo.getLoginName());
                     tenderIds.add(userBaseDo.getUid());
                 }
@@ -105,7 +118,6 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
                 }
             }
         }
-
         List<RoleInfoDTO> roleInfoList = userRoleInfoDoMapper.selectRoleInfoIn(uids);
         if (roleInfoList != null && roleInfoList.size() > 0) {
             Map<Integer, List<RoleInfoDTO>> roleInfoMap = transferRoleInfoListToMap(roleInfoList);
@@ -117,11 +129,38 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
                 }
             }
         }
-
+        List<UserDO> userDOList = new ArrayList<>(userMap.size());
+        List<UserExtendDO> userExtendDOList = new ArrayList<>(userMap.size());
+        List<UserSubAccountDO> userSubAccountDOList = new ArrayList<>(itemList.size());
+        List<LoginStatusDO> loginStatusDOList = new ArrayList<>(userMap.size());
+        List<RegisterInfoDO> registerInfoDOList = new ArrayList<>(itemList.size());
+        List<TenderInfoDO> tenderInfoDOList = new ArrayList<>();
+        List<BorrowerInfoDO> borrowerInfoDOList = new ArrayList<>();
         for (UserInfoWrapper wrapper : userMap.values()) {
             wrapper.transferAllInfo();
+            userDOList.add(wrapper.getUserDO());
+            userExtendDOList.add(wrapper.getUserExtendDO());
+            userSubAccountDOList.addAll(wrapper.getSubAccountList());
+            loginStatusDOList.add(wrapper.getLoginStatus());
+            registerInfoDOList.addAll(wrapper.getRegisterInfoList());
+            tenderInfoDOList.add(wrapper.getTenderInfoDO());
+            borrowerInfoDOList.add(wrapper.getBorrowerInfoDO());
         }
+        doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
     }
+
+    private void doMigrate(List<UserDO> userDOList, List<UserExtendDO> userExtendDOList, List<UserSubAccountDO> userSubAccountDOList,
+            List<LoginStatusDO> loginStatusDOList, List<RegisterInfoDO> registerInfoDOList, List<TenderInfoDO> tenderInfoDOList,
+            List<BorrowerInfoDO> borrowerInfoDOList) {
+        userDOMapper.insertBatchWithId(userDOList);
+        userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
+        userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
+        loginStatusDOMapper.insertBatch(loginStatusDOList);
+        registerInfoDOMapper.insertBatch(registerInfoDOList);
+        tenderInfoDOMapper.insertBatch(tenderInfoDOList);
+        borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
+    }
+
 
     private Map<Integer, List<RoleInfoDTO>> transferRoleInfoListToMap(List<RoleInfoDTO> roleInfoList) {
         Map<Integer, List<RoleInfoDTO>> map = new HashMap<>(roleInfoList.size());

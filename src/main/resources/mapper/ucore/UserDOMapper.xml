@@ -28,12 +28,6 @@
         <result column="gmt_create" property="createTime" />
         <result column="gmt_modified" property="modifiedTime" />
     </resultMap>
-    <sql id="Base_Column_List">
-        id, nick_name, id_number, cert_no, id_card_type, user_name, login_name,
-        head_photo, mobile, mobile_status, email, email_status, real_status, real_status_time,
-        login_status, gender, birthday, nation, province, city, area, age, volk, gmt_create,
-        gmt_modified
-    </sql>
     <insert id="insertBatchWithId" parameterType="com.weidai.ucore.facade.domain.UserDO">
         insert into u_user(
           id, nick_name, id_number, cert_no, id_card_type, user_name,

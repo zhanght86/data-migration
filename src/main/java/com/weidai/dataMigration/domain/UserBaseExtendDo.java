@@ -5,11 +5,7 @@ import java.util.Date;
 public class UserBaseExtendDo {
     private Integer uid;
 
-    private Byte regularCustomer;
-
     private Integer drivingLicence;
-
-    private Integer custSource;
 
     private String houseAddr;
 
@@ -31,8 +27,6 @@ public class UserBaseExtendDo {
 
     private Date modifyTime;
 
-    private Date lastModfityTime;
-
     private String volk;
 
     private Integer childrenSituation;
@@ -52,8 +46,6 @@ public class UserBaseExtendDo {
     private String localHousehold;
 
     private Integer alipayCert;
-
-    private String carEstate;
 
     private String monthSpend;
 
@@ -95,28 +87,12 @@ public class UserBaseExtendDo {
         this.uid = uid;
     }
 
-    public Byte getRegularCustomer() {
-        return regularCustomer;
-    }
-
-    public void setRegularCustomer(Byte regularCustomer) {
-        this.regularCustomer = regularCustomer;
-    }
-
     public Integer getDrivingLicence() {
         return drivingLicence;
     }
 
     public void setDrivingLicence(Integer drivingLicence) {
         this.drivingLicence = drivingLicence;
-    }
-
-    public Integer getCustSource() {
-        return custSource;
-    }
-
-    public void setCustSource(Integer custSource) {
-        this.custSource = custSource;
     }
 
     public String getHouseAddr() {
@@ -199,14 +175,6 @@ public class UserBaseExtendDo {
         this.modifyTime = modifyTime;
     }
 
-    public Date getLastModfityTime() {
-        return lastModfityTime;
-    }
-
-    public void setLastModfityTime(Date lastModfityTime) {
-        this.lastModfityTime = lastModfityTime;
-    }
-
     public String getVolk() {
         return volk;
     }
@@ -285,14 +253,6 @@ public class UserBaseExtendDo {
 
     public void setAlipayCert(Integer alipayCert) {
         this.alipayCert = alipayCert;
-    }
-
-    public String getCarEstate() {
-        return carEstate;
-    }
-
-    public void setCarEstate(String carEstate) {
-        this.carEstate = carEstate == null ? null : carEstate.trim();
     }
 
     public String getMonthSpend() {

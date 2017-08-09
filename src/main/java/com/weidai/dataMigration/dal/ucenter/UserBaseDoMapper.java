@@ -6,5 +6,4 @@ package com.weidai.dataMigration.dal.ucenter;
 /**
  * @author wuqi 2017/8/4 0004.
  */
-public interface UserBaseDoMapper {
-}
+public interface UserBaseDoMapper {}

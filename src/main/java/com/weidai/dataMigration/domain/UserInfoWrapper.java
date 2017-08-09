@@ -10,6 +10,7 @@ import com.weidai.ucore.facade.constant.UserTypeEnum;
 import com.weidai.ucore.facade.domain.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -24,11 +25,15 @@ public class UserInfoWrapper {
 
     private Integer borrowerUid;
 
+    private UserBaseDo borrowerUserBaseDo;
+
     private BorrowerDo borrowerDo;
+
+    private TenderDo tenderDo;
 
     private Integer tenderUid;
 
-    private TenderDo tenderDo;
+    private UserBaseDo tenderUserBaseDo;
 
     private String loginName;
 
@@ -82,9 +87,10 @@ public class UserInfoWrapper {
             if (list != null) {
                 for (RoleInfoDTO roleInfoDTO : list) {
                     RegisterInfoDO registerInfoDO = new RegisterInfoDO();
-                    BeanUtils.copyProperties(roleInfoDTO, registerInfoDO);
+                    BeanUtils.copyProperties(roleInfoDTO, registerInfoDO, "id");
                     registerInfoDO.setRegIp(userBaseDo.getAddIp());
                     registerInfoDO.setRegWay(getRegWay(registerInfoDO.getChannelCode()));
+                    registerInfoDO.setFirstReg(0);
                     registerInfoList.add(registerInfoDO);
                 }
             } else {
@@ -94,6 +100,7 @@ public class UserInfoWrapper {
                 registerInfoDO.setRegIp(userBaseDo.getAddIp());
                 registerInfoDO.setChannelCode(userBaseDo.getContent());
                 registerInfoDO.setRegWay(userBaseDo.getWay() == null ? getRegWay(userBaseDo.getContent()) : userBaseDo.getWay());
+                registerInfoDO.setFirstReg(0);
                 registerInfoDO.setRegTime(userBaseDo.getCreateTime());
             }
         }
@@ -128,7 +135,7 @@ public class UserInfoWrapper {
      */
     private void transferBorrowerInfoDO() {
         BorrowerInfoDO borrowerInfoDO = new BorrowerInfoDO();
-        BeanUtils.copyProperties(borrowerDo, borrowerInfoDO);
+        BeanUtils.copyProperties(borrowerDo, borrowerInfoDO, "id");
         borrowerInfoDO.setWeChatAccount(borrowerDo.getWeixinAccount());
         borrowerInfoDO.setWeChatBindTime(borrowerDo.getBindWeixinTime());
         if (userBaseExtendDo != null) {
@@ -137,15 +144,18 @@ public class UserInfoWrapper {
         if (borrowerInfoDO.getHasLicense() == null) {
             borrowerInfoDO.setHasLicense(0);
         }
+        borrowerInfoDO.setCreateTime(borrowerUserBaseDo.getCreateTime());
+        borrowerInfoDO.setModifiedTime(borrowerUserBaseDo.getUpdateTime());
     }
-
 
     /**
      * 转换投资人信息
      */
     private void transferTenderInfoDO() {
         TenderInfoDO tenderInfoDO = new TenderInfoDO();
-        BeanUtils.copyProperties(tenderDo, tenderInfoDO);
+        BeanUtils.copyProperties(tenderDo, tenderInfoDO, "id");
+        tenderInfoDO.setCreateTime(tenderUserBaseDo.getCreateTime());
+        tenderInfoDO.setModifiedTime(tenderUserBaseDo.getUpdateTime());
     }
 
     /**转换用户扩展信息
@@ -155,33 +165,58 @@ public class UserInfoWrapper {
         userExtendDO = new UserExtendDO();
         userExtendDO.setUserId(userDO.getId());
         if (userBaseExtendDo != null) {
-            BeanUtils.copyProperties(userBaseExtendDo, userExtendDO);
+            BeanUtils.copyProperties(userBaseExtendDo, userExtendDO, "estateDesc", "carDesc", "workType", "compType");
             userExtendDO.setCompName(userBaseExtendDo.getCompanyName());
+            userExtendDO.setCreateTime(userBaseExtendDo.getCreatedTime());
             userExtendDO.setModifiedTime(userBaseExtendDo.getModifyTime());
-            if (userBaseExtendDo.getPayOffForm() != null) {
+            userExtendDO.setHouseInfo(userBaseExtendDo.getHouseEstate());
+            if (StringUtils.hasText(userBaseExtendDo.getEstateDesc())) {
+                try{
+                    userExtendDO.setEstateDesc(Integer.parseInt(userBaseExtendDo.getEstateDesc()));
+                }catch(Exception e){}
+            }
+            if (StringUtils.hasText(userBaseExtendDo.getCarDesc())) {
+                try{
+                    userExtendDO.setCarDesc(Integer.parseInt(userBaseExtendDo.getCarDesc()));
+                }catch(Exception e){}
+            }
+            if (StringUtils.hasText(userBaseExtendDo.getWorkType())) {
+                try{
+                    userExtendDO.setWorkType(Integer.parseInt(userBaseExtendDo.getWorkType()));
+                }catch(Exception e){}
+            }
+            if (StringUtils.hasText(userBaseExtendDo.getCompType())) {
+                try{
+                    userExtendDO.setCompType(Integer.parseInt(userBaseExtendDo.getCompType()));
+                }catch(Exception e){}
+            }
+            if (StringUtils.hasText(userBaseExtendDo.getPayOffForm())) {
                 try {
                     userExtendDO.setPayoffForm(Integer.parseInt(userBaseExtendDo.getPayOffForm()));
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
             }
-            if (userBaseExtendDo.getJobTitle() != null) {
+            if (StringUtils.hasText(userBaseExtendDo.getJobTitle())) {
                 try {
                     userExtendDO.setJobLevel(Integer.parseInt(userBaseExtendDo.getJobTitle()));
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
             }
-            userExtendDO.setMarriage(primary.getMarriage());
-            if (primary.getEducation() != null) {
-                try {
-                    userExtendDO.setEducation(Integer.parseInt(primary.getEducation()));
-                } catch (Exception e) {
-                }
-            }
-            userExtendDO.setAssetSituation(primary.getIshave());
-            userExtendDO.setEmergencyName(primary.getEmergencyName());
-            userExtendDO.setEmergencyMobile(primary.getEmergencyMobile());
-            userExtendDO.setOccupation(primary.getOccupation());
-            userExtendDO.setAnnualIncome(primary.getAnnualIncome());
+        }
+        userExtendDO.setMarriage(primary.getMarriage());
+        if (StringUtils.hasText(primary.getEducation())) {
+            try {
+                userExtendDO.setEducation(Integer.parseInt(primary.getEducation()));
+            } catch (Exception e) {}
+        }
+        userExtendDO.setAssetSituation(primary.getIshave());
+        userExtendDO.setEmergencyName(primary.getEmergencyName());
+        userExtendDO.setEmergencyMobile(primary.getEmergencyMobile());
+        userExtendDO.setOccupation(primary.getOccupation());
+        userExtendDO.setAnnualIncome(primary.getAnnualIncome());
+        if (userExtendDO.getCreateTime() == null) {
+            userExtendDO.setCreateTime(primary.getCreateTime());
+        }
+        if (userExtendDO.getModifiedTime() == null) {
+            userExtendDO.setModifiedTime(primary.getUpdateTime());
         }
     }
 
@@ -194,10 +229,8 @@ public class UserInfoWrapper {
         loginStatus.setUserId(userDO.getId());
         loginStatus.setSalt(puser.getSalt());
         loginStatus.setPassword(puser.getPassword());
-        loginStatus.setLoginNum(0);
-        Date cur = new Date();
-        loginStatus.setCreateTime(cur);
-        loginStatus.setModifiedTime(cur);
+        loginStatus.setCreateTime(puser.getCreateTime());
+        loginStatus.setModifiedTime(puser.getUpdateTime());
     }
 
     /**
@@ -243,12 +276,10 @@ public class UserInfoWrapper {
         userDO.setHeadPhoto(primary.getHeadphoto());
         userDO.setLoginStatus(primary.getStatus());
         userDO.setGender(primary.getSex());
+        userDO.setModifiedTime(primary.getUpdateTime());
         if (userBaseExtendDo != null) {
             userDO.setVolk(userBaseExtendDo.getVolk());
         }
-        Date cur = new Date();
-        userDO.setCreateTime(cur);
-        userDO.setModifiedTime(cur);
         userDO.setId(UserMigrationHolder.nextId());
     }
 
@@ -313,12 +344,28 @@ public class UserInfoWrapper {
         this.borrowerUid = borrowerUid;
     }
 
+    public UserBaseDo getBorrowerUserBaseDo() {
+        return borrowerUserBaseDo;
+    }
+
+    public void setBorrowerUserBaseDo(UserBaseDo borrowerUserBaseDo) {
+        this.borrowerUserBaseDo = borrowerUserBaseDo;
+    }
+
     public BorrowerDo getBorrowerDo() {
         return borrowerDo;
     }
 
     public void setBorrowerDo(BorrowerDo borrowerDo) {
         this.borrowerDo = borrowerDo;
+    }
+
+    public TenderDo getTenderDo() {
+        return tenderDo;
+    }
+
+    public void setTenderDo(TenderDo tenderDo) {
+        this.tenderDo = tenderDo;
     }
 
     public Integer getTenderUid() {
@@ -329,12 +376,12 @@ public class UserInfoWrapper {
         this.tenderUid = tenderUid;
     }
 
-    public TenderDo getTenderDo() {
-        return tenderDo;
+    public UserBaseDo getTenderUserBaseDo() {
+        return tenderUserBaseDo;
     }
 
-    public void setTenderDo(TenderDo tenderDo) {
-        this.tenderDo = tenderDo;
+    public void setTenderUserBaseDo(UserBaseDo tenderUserBaseDo) {
+        this.tenderUserBaseDo = tenderUserBaseDo;
     }
 
     public String getLoginName() {

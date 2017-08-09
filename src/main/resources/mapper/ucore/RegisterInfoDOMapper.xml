@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weidai.dataMigration.dal.ucore.RegisterInfoDOMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.ucore.facade.domain.RegisterInfoDO">
+        <id column="id" property="id" />
+        <result column="uid" property="uid" />
+        <result column="user_register_type" property="userRegisterType" />
+        <result column="keyword" property="keyword" />
+        <result column="channel_code" property="channelCode" />
+        <result column="reg_way" property="regWay" />
+        <result column="reg_device_type" property="regDeviceType" />
+        <result column="device_os_type" property="deviceOsType" />
+        <result column="device_model" property="deviceModel" />
+        <result column="reg_ip" property="regIp" />
+        <result column="mac_addr" property="macAddr" />
+        <result column="is_first_reg" property="firstReg" />
+        <result column="reg_time" property="regTime" />
+    </resultMap>
+    <insert id="insertBatch" parameterType="com.weidai.ucore.facade.domain.RegisterInfoDO">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into
+        u_register_info(uid, user_register_type,
+            keyword, channel_code, reg_way,
+            reg_ip, is_first_reg, reg_time)
+        values
+        <foreach collection="registerInfoList" item="registerInfo" index="index" separator=",">
+            (#{registerInfo.uid}, #{registerInfo.userRegisterType}, #{registerInfo.keyword},
+            #{registerInfo.channelCode}, #{registerInfo.regWay}, #{registerInfo.regIp},
+            #{registerInfo.firstReg}, #{registerInfo.regTime})
+        </foreach>
+    </insert>
+</mapper>

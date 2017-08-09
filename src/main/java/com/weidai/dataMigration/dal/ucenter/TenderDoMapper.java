@@ -4,6 +4,7 @@
 package com.weidai.dataMigration.dal.ucenter;
 
 import com.weidai.dataMigration.domain.TenderDo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Set;
@@ -12,5 +13,5 @@ import java.util.Set;
  * @author wuqi 2017/8/7 0007.
  */
 public interface TenderDoMapper {
-    List<TenderDo> selectTenderIn(Set<Integer> tenderIds);
+    List<TenderDo> selectTenderIn(@Param("uidSet") Set<Integer> uidSet);
 }

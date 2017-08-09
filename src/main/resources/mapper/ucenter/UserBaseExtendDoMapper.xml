@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.weidai.dataMigration.dal.ucenter.UserBaseExtendDoMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.dataMigration.domain.UserBaseExtendDo" >
+        <id column="UID" property="uid" jdbcType="INTEGER" />
+        <result column="DRIVING_LICENCE" property="drivingLicence" jdbcType="INTEGER" />
+        <result column="HOUSE_ADDR" property="houseAddr" jdbcType="VARCHAR" />
+        <result column="NOW_ADDR" property="nowAddr" jdbcType="VARCHAR" />
+        <result column="FAMILY_TEL" property="familyTel" jdbcType="VARCHAR" />
+        <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR" />
+        <result column="WORK_YEARS" property="workYears" jdbcType="INTEGER" />
+        <result column="COMP_TEL" property="compTel" jdbcType="VARCHAR" />
+        <result column="JOB" property="job" jdbcType="VARCHAR" />
+        <result column="COMP_ADDR" property="compAddr" jdbcType="VARCHAR" />
+        <result column="CREATED_TIME" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+        <result column="VOLK" property="volk" jdbcType="VARCHAR" />
+        <result column="CHILDREN_SITUATION" property="childrenSituation" jdbcType="INTEGER" />
+        <result column="HOUSE_SITUATION" property="houseSituation" jdbcType="INTEGER" />
+        <result column="COLLEGE" property="college" jdbcType="VARCHAR" />
+        <result column="HOUSE_ESTATE" property="houseEstate" jdbcType="VARCHAR" />
+        <result column="OTHERESTATE" property="otherEstate" jdbcType="VARCHAR" />
+        <result column="ESTATE_DESC" property="estateDesc" jdbcType="CHAR" />
+        <result column="CAR_DESC" property="carDesc" jdbcType="CHAR" />
+        <result column="LOCAL_HOUSEHOLD" property="localHousehold" jdbcType="CHAR" />
+        <result column="ALIPAY_CERT" property="alipayCert" jdbcType="INTEGER" />
+        <result column="month_spend" property="monthSpend" jdbcType="VARCHAR" />
+        <result column="road_addr" property="roadAddr" jdbcType="VARCHAR" />
+        <result column="INDUSTRY_CATEGORY" property="industryCategory" jdbcType="VARCHAR" />
+        <result column="PAY_OFF_FORM" property="payOffForm" jdbcType="VARCHAR" />
+        <result column="WORK_TYPE" property="workType" jdbcType="VARCHAR" />
+        <result column="POSTCODE" property="postcode" jdbcType="VARCHAR" />
+        <result column="DEPT" property="dept" jdbcType="VARCHAR" />
+        <result column="ADMINISTRATIVE_LEVEL" property="administrativeLevel" jdbcType="VARCHAR" />
+        <result column="COMP_TYPE" property="compType" jdbcType="VARCHAR" />
+        <result column="id_card_validity" property="idCardValidity" jdbcType="CHAR" />
+        <result column="now_address_province" property="nowAddressProvince" jdbcType="VARCHAR" />
+        <result column="now_address_city" property="nowAddressCity" jdbcType="VARCHAR" />
+        <result column="company_address_city" property="companyAddressCity" jdbcType="VARCHAR" />
+        <result column="company_address_province" property="companyAddressProvince" jdbcType="VARCHAR" />
+        <result column="company_postcode" property="companyPostcode" jdbcType="VARCHAR" />
+        <result column="job_title" property="jobTitle" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+        UID, DRIVING_LICENCE, HOUSE_ADDR, NOW_ADDR, FAMILY_TEL,
+        COMPANY_NAME, WORK_YEARS, COMP_TEL, JOB, COMP_ADDR, CREATED_TIME, MODIFY_TIME,
+        VOLK, CHILDREN_SITUATION, HOUSE_SITUATION, COLLEGE, HOUSE_ESTATE, OTHERESTATE, ESTATE_DESC,
+        CAR_DESC, LOCAL_HOUSEHOLD, ALIPAY_CERT, month_spend, road_addr, INDUSTRY_CATEGORY,
+        PAY_OFF_FORM, WORK_TYPE, POSTCODE, DEPT, ADMINISTRATIVE_LEVEL, COMP_TYPE, id_card_validity,
+        now_address_province, now_address_city, company_address_city, company_address_province,
+        company_postcode, job_title
+    </sql>
+    <select id="selectUserBaseExtendIn" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from u_base_extend
+        where uid in
+        <foreach collection="uidSet" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+</mapper>

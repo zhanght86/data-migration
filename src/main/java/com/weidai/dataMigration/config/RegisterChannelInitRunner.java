@@ -33,6 +33,7 @@ public class RegisterChannelInitRunner implements CommandLineRunner {
         Map<String, Integer> channelMap = new HashMap<>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() instanceof List) {
+                @SuppressWarnings("unchecked")
                 List<String> list = (List<String>) entry.getValue();
                 for (String code : list) {
                     channelMap.put(code, Integer.parseInt(entry.getKey()));

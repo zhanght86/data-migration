@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.weidai.dataMigration.dal.ucenter.BorrowerDoMapper">
+    <resultMap id="BaseResultMap" type="com.weidai.dataMigration.domain.BorrowerDo" >
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="UID" property="uid" jdbcType="INTEGER" />
+        <result column="CID" property="cid" jdbcType="INTEGER" />
+        <result column="UID_CUS" property="uidCus" jdbcType="INTEGER" />
+        <result column="WYR_CID" property="wyrCid" jdbcType="INTEGER" />
+        <result column="PURPOSE" property="purpose" jdbcType="VARCHAR" />
+        <result column="BORROW_INTENTION" property="borrowIntention" jdbcType="CHAR" />
+        <result column="weixin_account" property="weixinAccount" jdbcType="VARCHAR" />
+        <result column="bind_weixin_time" property="bindWeixinTime" jdbcType="TIMESTAMP" />
+        <result column="ci_identification_id" property="ciIdentificationId" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+        ID, UID, CID, UID_CUS,
+        WYR_CID, PURPOSE, BORROW_INTENTION, weixin_account,
+        bind_weixin_time, ci_identification_id
+    </sql>
+    <select id="selectBorrowerIn" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from u_borrower
+        where uid in
+        <foreach collection="uidSet" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+</mapper>
