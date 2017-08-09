@@ -12,10 +12,16 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
+import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -23,40 +29,70 @@ import javax.sql.DataSource;
  * @author wuqi 2017/8/1 0001.
  */
 @Configuration
-@EnableBatchProcessing
 public class BatchConfig {
-    @Autowired
-    private JobBuilderFactory jobBuilderFactory;
-
-    @Autowired
-    private StepBuilderFactory stepBuilderFactory;
-
-    @Autowired
-    private UserMigrationService userMigrationService;
 
     @Bean
-    @Primary
-    public DataSource nullableDataSource() {
-        return null;
+    public JobRepository jobRepository() throws Exception {
+        return new MapJobRepositoryFactoryBean().getObject();
     }
 
     @Bean
-    public Job userMigrationJob(JobRepository jobRepository, Step step) {
-        return jobBuilderFactory.get("userMigrationJob").repository(jobRepository).start(step).build();
+    public JobBuilderFactory jobBuilderFactory(JobRepository jobRepository){
+        return new JobBuilderFactory(jobRepository);
+    }
+
+    @Bean
+    public StepBuilderFactory stepBuilderFactory(JobRepository jobRepository){
+        return new StepBuilderFactory(jobRepository, new ResourcelessTransactionManager());
+    }
+
+    @Bean
+    public JobLauncher jobLauncher(JobRepository jobRepository){
+        SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        return jobLauncher;
     }
 
     @Bean
     public MyBatisPagingItemReader<UserBaseDo> myBatisPagingItemReader(@Qualifier("ucenterSSF") SqlSessionFactory sqlSessionFactory) {
         MyBatisPagingItemReader<UserBaseDo> itemReader = new MyBatisPagingItemReader<>();
         itemReader.setSqlSessionFactory(sqlSessionFactory);
-        itemReader.setQueryId("com.weidai.dataMigration.domain.UserBaseDo.listByPage");
+        itemReader.setQueryId("com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper.listByPage");
         itemReader.setPageSize(10_000);
         itemReader.setMaxItemCount(4_000_000);
         return itemReader;
     }
 
     @Bean
-    public Step step(MyBatisPagingItemReader<UserBaseDo> itemReader) {
-        return stepBuilderFactory.get("step1").chunk(10_000).reader(itemReader).build();
+    public UserBaseItemProcessor userBaseItemProcessor(){
+        return new UserBaseItemProcessor();
+    }
+    
+    @Bean
+    public DataMigrationItemWriter<UserBaseDo> dataMigrationItemWriter(UserMigrationService userMigrationService) {
+        DataMigrationItemWriter<UserBaseDo> itemWriter = new DataMigrationItemWriter<>();
+        itemWriter.setMigrationService(userMigrationService);
+        return itemWriter;
+    }
+
+    @Bean
+    @Qualifier("step1")
+    public Step step(StepBuilderFactory stepBuilderFactory, MyBatisPagingItemReader<UserBaseDo> itemReader, UserBaseItemProcessor itemProcessor,
+            DataMigrationItemWriter<UserBaseDo> itemWriter) {
+        return stepBuilderFactory.get("step1")
+                .<UserBaseDo, UserBaseDo> chunk(10_000)
+                .reader(itemReader)
+                .processor(itemProcessor)
+                .writer(itemWriter)
+                .build();
+    }
+
+    @Bean
+    public Job userMigrationJob(JobBuilderFactory jobBuilderFactory, @Qualifier("step1") Step step) {
+        return jobBuilderFactory.get("dataMigrationJob")
+                .flow(step)
+                .end()
+                .build();
     }
 }

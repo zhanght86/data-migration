@@ -60,7 +60,7 @@
         u.GUID, u.DEPOSITORY_STATUS, u.user_type, u.civil_subject_type, u.id_card_type, u.cert_no, u.nick_name, u.is_personal
     </sql>
 
-    <select id="listByPage">
+    <select id="listByPage" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from u_base u

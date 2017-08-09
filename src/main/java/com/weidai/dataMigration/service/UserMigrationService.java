@@ -61,29 +61,26 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
     private BorrowerInfoDOMapper borrowerInfoDOMapper;
 
     @Override
-    @Transactional(value = "ucoreTM")
     public void migrate(List<? extends UserBaseDo> itemList) {
         Map<String, UserInfoWrapper> userMap = new HashMap<>(itemList.size());
         Set<Integer> uids = new HashSet<>(itemList.size());
         Set<Integer> borrowerIds = new HashSet<>();
         Set<Integer> tenderIds = new HashSet<>();
         for (UserBaseDo userBaseDo : itemList) {
-            if (userBaseDo.getMobile() != null && isNotEmployee(userBaseDo)) {
-                if (!userMap.containsKey(userBaseDo.getMobile())) {
-                    userMap.put(userBaseDo.getMobile(), new UserInfoWrapper());
-                }
-                userMap.get(userBaseDo.getMobile()).getUserBaseList().add(userBaseDo);
-                if (UserTypeEnum.U_BORROWER.getCode().equals(userBaseDo.getUserType())) {
-                    userMap.get(userBaseDo.getMobile()).setBorrowerUid(userBaseDo.getUid());
-                    userMap.get(userBaseDo.getMobile()).setBorrowerUserBaseDo(userBaseDo);
-                    borrowerIds.add(userBaseDo.getUid());
-                } else if (UserTypeEnum.U_TENDER.getCode().equals(userBaseDo.getUserType())) {
-                    userMap.get(userBaseDo.getMobile()).setTenderUid(userBaseDo.getUid());
-                    userMap.get(userBaseDo.getMobile()).setTenderUserBaseDo(userBaseDo);
-                    userMap.get(userBaseDo.getMobile()).setLoginName(userBaseDo.getLoginName());
-                    tenderIds.add(userBaseDo.getUid());
-                }
-                uids.add(userBaseDo.getUid());
+            if (!userMap.containsKey(userBaseDo.getMobile())) {
+                userMap.put(userBaseDo.getMobile(), new UserInfoWrapper());
+            }
+            userMap.get(userBaseDo.getMobile()).getUserBaseList().add(userBaseDo);
+            uids.add(userBaseDo.getUid());
+            if (UserTypeEnum.U_BORROWER.getCode().equals(userBaseDo.getUserType())) {
+                userMap.get(userBaseDo.getMobile()).setBorrowerUid(userBaseDo.getUid());
+                userMap.get(userBaseDo.getMobile()).setBorrowerUserBaseDo(userBaseDo);
+                borrowerIds.add(userBaseDo.getUid());
+            } else if (UserTypeEnum.U_TENDER.getCode().equals(userBaseDo.getUserType())) {
+                userMap.get(userBaseDo.getMobile()).setTenderUid(userBaseDo.getUid());
+                userMap.get(userBaseDo.getMobile()).setTenderUserBaseDo(userBaseDo);
+                userMap.get(userBaseDo.getMobile()).setLoginName(userBaseDo.getLoginName());
+                tenderIds.add(userBaseDo.getUid());
             }
         }
         if (userMap.isEmpty()) {
@@ -149,6 +146,7 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
         doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
     }
 
+    @Transactional(value = "ucoreTM")
     private void doMigrate(List<UserDO> userDOList, List<UserExtendDO> userExtendDOList, List<UserSubAccountDO> userSubAccountDOList,
             List<LoginStatusDO> loginStatusDOList, List<RegisterInfoDO> registerInfoDOList, List<TenderInfoDO> tenderInfoDOList,
             List<BorrowerInfoDO> borrowerInfoDOList) {
@@ -160,7 +158,6 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
         tenderInfoDOMapper.insertBatch(tenderInfoDOList);
         borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
     }
-
 
     private Map<Integer, List<RoleInfoDTO>> transferRoleInfoListToMap(List<RoleInfoDTO> roleInfoList) {
         Map<Integer, List<RoleInfoDTO>> map = new HashMap<>(roleInfoList.size());
@@ -195,9 +192,5 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             map.put(userBaseExtendDo.getUid(), userBaseExtendDo);
         }
         return map;
-    }
-
-    private boolean isNotEmployee(UserBaseDo userBaseDo) {
-        return userBaseDo.getUserType() != null && UserTypeEnum.getEnumByCode(userBaseDo.getUserType()) != null;
     }
 }

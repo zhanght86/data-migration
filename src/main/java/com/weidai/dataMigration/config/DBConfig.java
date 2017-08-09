@@ -4,6 +4,7 @@
 package com.weidai.dataMigration.config;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -45,7 +46,7 @@ public class DBConfig {
     @Bean
     @Qualifier("ucenterSST")
     public SqlSessionTemplate ucenterSqlSessionTemplate(@Qualifier("ucenterSSF") SqlSessionFactory ucenterSqlSessionFactory){
-        return new SqlSessionTemplate(ucenterSqlSessionFactory);
+        return new SqlSessionTemplate(ucenterSqlSessionFactory, ExecutorType.BATCH);
     }
 
     @Bean
@@ -85,7 +86,7 @@ public class DBConfig {
     @Bean
     @Qualifier("ucoreSST")
     public SqlSessionTemplate ucoreSqlSessionTemplate(@Qualifier("ucoreSSF") SqlSessionFactory ucoreSqlSessionFactory){
-        return new SqlSessionTemplate(ucoreSqlSessionFactory);
+        return new SqlSessionTemplate(ucoreSqlSessionFactory, ExecutorType.BATCH);
     }
 
     @Bean
