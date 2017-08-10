@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -140,13 +139,16 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             userSubAccountDOList.addAll(wrapper.getSubAccountList());
             loginStatusDOList.add(wrapper.getLoginStatus());
             registerInfoDOList.addAll(wrapper.getRegisterInfoList());
-            tenderInfoDOList.add(wrapper.getTenderInfoDO());
-            borrowerInfoDOList.add(wrapper.getBorrowerInfoDO());
+            if (wrapper.getTenderInfoDO() != null) {
+                tenderInfoDOList.add(wrapper.getTenderInfoDO());
+            }
+            if (wrapper.getBorrowerInfoDO() != null) {
+                borrowerInfoDOList.add(wrapper.getBorrowerInfoDO());
+            }
         }
         doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
     }
 
-    @Transactional(value = "ucoreTM")
     private void doMigrate(List<UserDO> userDOList, List<UserExtendDO> userExtendDOList, List<UserSubAccountDO> userSubAccountDOList,
             List<LoginStatusDO> loginStatusDOList, List<RegisterInfoDO> registerInfoDOList, List<TenderInfoDO> tenderInfoDOList,
             List<BorrowerInfoDO> borrowerInfoDOList) {

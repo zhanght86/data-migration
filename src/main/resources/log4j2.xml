@@ -63,12 +63,15 @@
 	</Appenders>
 
 	<Loggers>
+		<Logger name="com.weidai.dataMigration.dal" level="debug" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
 		<Root level="info">
 			<AppenderRef ref="console"/>
-			<AppenderRef ref="debug_log"/>
-			<AppenderRef ref="info_log"/>
-			<AppenderRef ref="warn_log"/>
-			<AppenderRef ref="error_log"/>
+			<!--<AppenderRef ref="debug_log"/>-->
+			<!--<AppenderRef ref="info_log"/>-->
+			<!--<AppenderRef ref="warn_log"/>-->
+			<!--<AppenderRef ref="error_log"/>-->
 		</Root>
 	</Loggers>
 </Configuration>

@@ -11,9 +11,6 @@
         <result column="gmt_modified" property="modifiedTime" />
     </resultMap>
     <insert id="insertBatch" parameterType="com.weidai.ucore.facade.dto.LoginStatusDTO">
-        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
         insert into u_login_status(user_id, salt, last_login_time, gmt_create, gmt_modified)
         values
         <foreach collection="loginStatusList" item="loginStatus" index="index" separator=",">

@@ -9,15 +9,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
-import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -42,8 +40,8 @@ public class BatchConfig {
     }
 
     @Bean
-    public StepBuilderFactory stepBuilderFactory(JobRepository jobRepository){
-        return new StepBuilderFactory(jobRepository, new ResourcelessTransactionManager());
+    public StepBuilderFactory stepBuilderFactory(JobRepository jobRepository, DataSourceTransactionManager transactionManager){
+        return new StepBuilderFactory(jobRepository, transactionManager);
     }
 
     @Bean
@@ -60,13 +58,17 @@ public class BatchConfig {
         itemReader.setSqlSessionFactory(sqlSessionFactory);
         itemReader.setQueryId("com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper.listByPage");
         itemReader.setPageSize(10_000);
-        itemReader.setMaxItemCount(4_000_000);
         return itemReader;
     }
 
     @Bean
     public UserBaseItemProcessor userBaseItemProcessor(){
         return new UserBaseItemProcessor();
+    }
+
+    @Bean
+    public DataMigrationCompletionListener listener(){
+        return new DataMigrationCompletionListener();
     }
     
     @Bean
@@ -81,7 +83,7 @@ public class BatchConfig {
     public Step step(StepBuilderFactory stepBuilderFactory, MyBatisPagingItemReader<UserBaseDo> itemReader, UserBaseItemProcessor itemProcessor,
             DataMigrationItemWriter<UserBaseDo> itemWriter) {
         return stepBuilderFactory.get("step1")
-                .<UserBaseDo, UserBaseDo> chunk(10_000)
+                .<UserBaseDo, UserBaseDo> chunk(10000)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)
@@ -89,10 +91,11 @@ public class BatchConfig {
     }
 
     @Bean
-    public Job userMigrationJob(JobBuilderFactory jobBuilderFactory, @Qualifier("step1") Step step) {
+    public Job userMigrationJob(JobBuilderFactory jobBuilderFactory, @Qualifier("step1") Step step, DataMigrationCompletionListener listener) {
         return jobBuilderFactory.get("dataMigrationJob")
-                .flow(step)
-                .end()
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .start(step)
                 .build();
     }
 }

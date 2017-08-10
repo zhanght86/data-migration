@@ -134,7 +134,7 @@ public class UserInfoWrapper {
      * 转换借款人信息
      */
     private void transferBorrowerInfoDO() {
-        BorrowerInfoDO borrowerInfoDO = new BorrowerInfoDO();
+        borrowerInfoDO = new BorrowerInfoDO();
         BeanUtils.copyProperties(borrowerDo, borrowerInfoDO, "id");
         borrowerInfoDO.setWeChatAccount(borrowerDo.getWeixinAccount());
         borrowerInfoDO.setWeChatBindTime(borrowerDo.getBindWeixinTime());
@@ -152,7 +152,7 @@ public class UserInfoWrapper {
      * 转换投资人信息
      */
     private void transferTenderInfoDO() {
-        TenderInfoDO tenderInfoDO = new TenderInfoDO();
+        tenderInfoDO = new TenderInfoDO();
         BeanUtils.copyProperties(tenderDo, tenderInfoDO, "id");
         tenderInfoDO.setCreateTime(tenderUserBaseDo.getCreateTime());
         tenderInfoDO.setModifiedTime(tenderUserBaseDo.getUpdateTime());
@@ -201,7 +201,9 @@ public class UserInfoWrapper {
                 } catch (Exception e) {}
             }
         }
-        userExtendDO.setMarriage(primary.getMarriage());
+        if (primary.getMarriage() == null || (primary.getMarriage() >= 0 && primary.getMarriage() <= 3)) {
+            userExtendDO.setMarriage(primary.getMarriage());
+        }
         if (StringUtils.hasText(primary.getEducation())) {
             try {
                 userExtendDO.setEducation(Integer.parseInt(primary.getEducation()));
@@ -277,8 +279,14 @@ public class UserInfoWrapper {
         userDO.setLoginStatus(primary.getStatus());
         userDO.setGender(primary.getSex());
         userDO.setModifiedTime(primary.getUpdateTime());
+        userDO.setRealStatus(primary.getRealStatus() == null ? 1 : primary.getRealStatus());
+        userDO.setMobileStatus(primary.getMobileStatus() == null ? 1 : primary.getMobileStatus());
+        userDO.setLoginStatus(primary.getStatus() == null ? 0 : primary.getStatus());
         if (userBaseExtendDo != null) {
             userDO.setVolk(userBaseExtendDo.getVolk());
+        }
+        if (userDO.getAge() != null && (userDO.getAge() > 999 || userDO.getAge() <= 0)) {
+            userDO.setAge(null);
         }
         userDO.setId(UserMigrationHolder.nextId());
     }

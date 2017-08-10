@@ -63,10 +63,8 @@
     <select id="listByPage" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from u_base u
-        where u.mobile in(
-            select mm.mobile from
-            (select mobile from u_base order by mobile limit #{_skiprows}, #{_pagesize}) mm
-        )
+        from u_base u,
+        (select uid from u_base order by mobile limit #{_skiprows}, #{_pagesize}) uu
+        where u.uid = uu.uid
     </select>
 </mapper>

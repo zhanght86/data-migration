@@ -17,9 +17,6 @@
         <result column="reg_time" property="regTime" />
     </resultMap>
     <insert id="insertBatch" parameterType="com.weidai.ucore.facade.domain.RegisterInfoDO">
-        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
         insert into
         u_register_info(uid, user_register_type,
             keyword, channel_code, reg_way,

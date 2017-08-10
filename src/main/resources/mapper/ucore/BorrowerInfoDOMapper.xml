@@ -14,16 +14,13 @@
         <result column="gmt_modified" property="modifiedTime" />
     </resultMap>
     <insert id="insertBatch" parameterType="com.weidai.ucore.facade.domain.BorrowerInfoDO">
-        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
         insert into
         u_borrower_info(uid, purpose, borrow_intention, wechat_account, wechat_bind_time,
         ci_identification_id, has_license, gmt_create, gmt_modified)
         values
         <foreach collection="borrowerInfoList" item="borrowerInfo" index="index" separator=",">
             (#{borrowerInfo.uid}, #{borrowerInfo.purpose}, #{borrowerInfo.borrowIntention}, #{borrowerInfo.weChatAccount},
-            #{borrowerInfo.weChatBindTime}, #{borrowerInfo.ciIdentificationId}, #{borrowerInfo.hasLicense}
+            #{borrowerInfo.weChatBindTime}, #{borrowerInfo.ciIdentificationId}, #{borrowerInfo.hasLicense},
             #{borrowerInfo.createTime}, #{borrowerInfo.modifiedTime})
         </foreach>
     </insert>

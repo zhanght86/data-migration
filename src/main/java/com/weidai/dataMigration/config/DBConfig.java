@@ -58,14 +58,6 @@ public class DBConfig {
     }
 
     @Bean
-    @Qualifier("ucenterTM")
-    public DataSourceTransactionManager ucenterTransactionManager(@Qualifier("ucenterDS") DataSource ucenterDataSource) {
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
-        transactionManager.setDataSource(ucenterDataSource);
-        return transactionManager;
-    }
-
-    @Bean
     @ConfigurationProperties("spring.datasource.druid.ucore")
     @Qualifier("ucoreDS")
     public DataSource ucoreDataSource() {
@@ -98,7 +90,6 @@ public class DBConfig {
     }
 
     @Bean
-    @Qualifier("ucoreTM")
     public DataSourceTransactionManager ucoreTransactionManager(@Qualifier("ucoreDS") DataSource ucoreDataSource) {
         DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
         transactionManager.setDataSource(ucoreDataSource);

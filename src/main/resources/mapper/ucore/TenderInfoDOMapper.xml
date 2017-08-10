@@ -10,9 +10,6 @@
         <result column="gmt_modified" property="modifiedTime" />
     </resultMap>
     <insert id="insertBatch" parameterType="com.weidai.ucore.facade.domain.TenderInfoDO">
-        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
         insert into u_tender_info(uid, risk_evaluation_score, risk_evaluation_type, gmt_create, gmt_modified)
         values
         <foreach collection="tenderInfoList" item="tenderInfo" index="index" separator=",">
