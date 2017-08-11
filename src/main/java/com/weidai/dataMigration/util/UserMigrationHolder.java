@@ -15,8 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author wuqi 2017/8/4 0004.
  */
 public class UserMigrationHolder {
+
+    public static final int CHUNK_SIZE = 100_1000;
+
+    public static final AtomicInteger INVALID_COUNT = new AtomicInteger(0);
+
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
+
     private static final Map<String, Integer> CHANNEL_MAP = new HashMap<>();
+
     public static final List<UserBaseDo> TAIL_ITEMS = new ArrayList<>();
 
     public static int nextId() {

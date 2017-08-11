@@ -3,6 +3,7 @@
  */
 package com.weidai.dataMigration.config;
 
+import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
@@ -19,7 +20,7 @@ public class DataMigrationCompletionListener extends JobExecutionListenerSupport
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            logger.info("!!! JOB FINISHED! INVALID_COUNT: {}", UserBaseItemProcessor.INVALID_COUNT.get());
+            logger.info("!!! JOB FINISHED! INVALID_COUNT: {}", UserMigrationHolder.INVALID_COUNT.get());
         }
     }
 }

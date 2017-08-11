@@ -4,6 +4,7 @@
 package com.weidai.dataMigration.config;
 
 import com.weidai.dataMigration.service.MigrationService;
+import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemWriter;
@@ -29,7 +30,7 @@ public class DataMigrationItemWriter<T> implements ItemWriter<T>, InitializingBe
 
     @Override
     public void write(List<? extends T> items) throws Exception {
-        logger.info("Executing batch with {} items, INVALID_COUNT: {}", items.size(), UserBaseItemProcessor.INVALID_COUNT.get());
+        logger.info("Executing batch with {} items, invalid count: {}", items.size(), UserMigrationHolder.CHUNK_SIZE - items.size());
         if (!items.isEmpty()) {
             migrationService.migrate(items);
         }

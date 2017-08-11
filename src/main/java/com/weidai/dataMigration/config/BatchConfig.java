@@ -5,6 +5,7 @@ package com.weidai.dataMigration.config;
 
 import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.service.UserMigrationService;
+import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.springframework.batch.core.Job;
@@ -57,7 +58,7 @@ public class BatchConfig {
         MyBatisPagingItemReader<UserBaseDo> itemReader = new MyBatisPagingItemReader<>();
         itemReader.setSqlSessionFactory(sqlSessionFactory);
         itemReader.setQueryId("com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper.listByPage");
-        itemReader.setPageSize(10_000);
+        itemReader.setPageSize(UserMigrationHolder.CHUNK_SIZE);
         return itemReader;
     }
 
@@ -83,7 +84,7 @@ public class BatchConfig {
     public Step step(StepBuilderFactory stepBuilderFactory, MyBatisPagingItemReader<UserBaseDo> itemReader, UserBaseItemProcessor itemProcessor,
             DataMigrationItemWriter<UserBaseDo> itemWriter) {
         return stepBuilderFactory.get("step1")
-                .<UserBaseDo, UserBaseDo> chunk(10_000)
+                .<UserBaseDo, UserBaseDo> chunk(UserMigrationHolder.CHUNK_SIZE)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)
