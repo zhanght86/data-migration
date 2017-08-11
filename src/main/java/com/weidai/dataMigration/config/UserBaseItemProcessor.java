@@ -15,15 +15,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UserBaseItemProcessor implements ItemProcessor<UserBaseDo, UserBaseDo> {
     
-    public static AtomicInteger failedCount = new AtomicInteger(0);
+    public static final AtomicInteger INVALID_COUNT = new AtomicInteger(0);
     
     @Override
     public UserBaseDo process(UserBaseDo userBaseDo) throws Exception {
-        if (StringUtils.hasText(userBaseDo.getMobile()) && isNotEmployee(userBaseDo)) {
+        if (StringUtils.hasText(userBaseDo.getMobile()) && isValid(userBaseDo) && isNotEmployee(userBaseDo)) {
             return userBaseDo;
         }
-        failedCount.getAndIncrement();
+        INVALID_COUNT.getAndIncrement();
         return null;
+    }
+
+    private boolean isValid(UserBaseDo userBaseDo) {
+        if (userBaseDo.getStatus() != null) {
+            return userBaseDo.getStatus().equals(0) || userBaseDo.getStatus().equals(2);
+        }
+        return true;
     }
 
     private boolean isNotEmployee(UserBaseDo userBaseDo) {

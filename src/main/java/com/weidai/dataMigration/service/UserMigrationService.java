@@ -9,6 +9,7 @@ import com.weidai.dataMigration.dal.ucenter.UserBaseExtendDoMapper;
 import com.weidai.dataMigration.dal.ucenter.UserRoleInfoDoMapper;
 import com.weidai.dataMigration.dal.ucore.*;
 import com.weidai.dataMigration.domain.*;
+import com.weidai.dataMigration.util.UserMigrationHolder;
 import com.weidai.ucore.facade.constant.UserTypeEnum;
 import com.weidai.ucore.facade.domain.*;
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
 
     @Override
     public void migrate(List<? extends UserBaseDo> itemList) {
+        itemList = mergeList(itemList);
+        trimList(itemList);
         Map<String, UserInfoWrapper> userMap = new HashMap<>(itemList.size());
         Set<Integer> uids = new HashSet<>(itemList.size());
         Set<Integer> borrowerIds = new HashSet<>();
@@ -147,6 +150,26 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             }
         }
         doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
+    }
+
+    private List<? extends UserBaseDo> mergeList(List<? extends UserBaseDo> itemList) {
+        List<UserBaseDo> mergedList = new ArrayList<>(itemList.size());
+        mergedList.addAll(UserMigrationHolder.TAIL_ITEMS);
+        mergedList.addAll(itemList);
+        UserMigrationHolder.TAIL_ITEMS.clear();
+        return mergedList;
+    }
+
+    private void trimList(List<? extends UserBaseDo> itemList) {
+        UserBaseDo lastItem = itemList.remove(itemList.size() - 1);
+        UserMigrationHolder.TAIL_ITEMS.add(lastItem);
+        String cur = lastItem.getMobile();
+        for (int i = itemList.size() - 1; i >= 0; i--) {
+            if (!cur.equals(itemList.get(i).getMobile())) {
+                break;
+            }
+            UserMigrationHolder.TAIL_ITEMS.add(itemList.remove(i));
+        }
     }
 
     private void doMigrate(List<UserDO> userDOList, List<UserExtendDO> userExtendDOList, List<UserSubAccountDO> userSubAccountDOList,

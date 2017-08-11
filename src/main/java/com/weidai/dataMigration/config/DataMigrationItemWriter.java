@@ -29,7 +29,7 @@ public class DataMigrationItemWriter<T> implements ItemWriter<T>, InitializingBe
 
     @Override
     public void write(List<? extends T> items) throws Exception {
-        logger.info("Executing batch with {} items.", items.size());
+        logger.info("Executing batch with {} items, INVALID_COUNT: {}", items.size(), UserBaseItemProcessor.INVALID_COUNT.get());
         if (!items.isEmpty()) {
             migrationService.migrate(items);
         }

@@ -83,7 +83,7 @@ public class BatchConfig {
     public Step step(StepBuilderFactory stepBuilderFactory, MyBatisPagingItemReader<UserBaseDo> itemReader, UserBaseItemProcessor itemProcessor,
             DataMigrationItemWriter<UserBaseDo> itemWriter) {
         return stepBuilderFactory.get("step1")
-                .<UserBaseDo, UserBaseDo> chunk(10000)
+                .<UserBaseDo, UserBaseDo> chunk(10_000)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)

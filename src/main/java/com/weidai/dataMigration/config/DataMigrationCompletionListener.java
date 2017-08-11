@@ -19,7 +19,7 @@ public class DataMigrationCompletionListener extends JobExecutionListenerSupport
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            logger.info("!!! JOB FINISHED! failedCount: {}", UserBaseItemProcessor.failedCount.get());
+            logger.info("!!! JOB FINISHED! INVALID_COUNT: {}", UserBaseItemProcessor.INVALID_COUNT.get());
         }
     }
 }
