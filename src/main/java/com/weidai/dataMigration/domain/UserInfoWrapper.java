@@ -73,9 +73,7 @@ public class UserInfoWrapper {
             transferBorrowerInfoDO();
         }
         // 转换渠道信息
-        if (!roleInfoMap.isEmpty()) {
-            transferRegisterInfoList();
-        }
+        transferRegisterInfoList();
     }
 
     /**
@@ -83,9 +81,8 @@ public class UserInfoWrapper {
      */
     private void transferRegisterInfoList() {
         for (UserBaseDo userBaseDo : userBaseList) {
-            List<RoleInfoDTO> list = roleInfoMap.get(userBaseDo.getUid());
-            if (list != null) {
-                for (RoleInfoDTO roleInfoDTO : list) {
+            if (!roleInfoMap.isEmpty() && roleInfoMap.get(userBaseDo.getUid()) != null) {
+                for (RoleInfoDTO roleInfoDTO : roleInfoMap.get(userBaseDo.getUid())) {
                     RegisterInfoDO registerInfoDO = new RegisterInfoDO();
                     BeanUtils.copyProperties(roleInfoDTO, registerInfoDO, "id");
                     registerInfoDO.setRegIp(userBaseDo.getAddIp());
@@ -102,6 +99,7 @@ public class UserInfoWrapper {
                 registerInfoDO.setRegWay(userBaseDo.getWay() == null ? getRegWay(userBaseDo.getContent()) : userBaseDo.getWay());
                 registerInfoDO.setFirstReg(0);
                 registerInfoDO.setRegTime(userBaseDo.getCreateTime());
+                registerInfoList.add(registerInfoDO);
             }
         }
         Collections.sort(registerInfoList, new Comparator<RegisterInfoDO>() {
@@ -135,9 +133,14 @@ public class UserInfoWrapper {
      */
     private void transferBorrowerInfoDO() {
         borrowerInfoDO = new BorrowerInfoDO();
-        BeanUtils.copyProperties(borrowerDo, borrowerInfoDO, "id");
+        BeanUtils.copyProperties(borrowerDo, borrowerInfoDO, "id", "borrowIntention");
         borrowerInfoDO.setWeChatAccount(borrowerDo.getWeixinAccount());
         borrowerInfoDO.setWeChatBindTime(borrowerDo.getBindWeixinTime());
+        if (StringUtils.hasText(borrowerDo.getBorrowIntention())) {
+            try {
+                borrowerInfoDO.setBorrowIntention(Integer.parseInt(borrowerDo.getBorrowIntention()));
+            } catch (Exception e) {}
+        }
         if (userBaseExtendDo != null) {
             borrowerInfoDO.setHasLicense(userBaseExtendDo.getDrivingLicence());
         }

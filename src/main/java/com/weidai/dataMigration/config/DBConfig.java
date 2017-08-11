@@ -50,7 +50,7 @@ public class DBConfig {
     }
 
     @Bean
-    public MapperScannerConfigurer ucenterMapperScannerConfigurer() {
+    public static MapperScannerConfigurer ucenterMapperScannerConfigurer() {
         MapperScannerConfigurer configurer = new MapperScannerConfigurer();
         configurer.setSqlSessionTemplateBeanName("ucenterSqlSessionTemplate");
         configurer.setBasePackage("com.weidai.dataMigration.dal.ucenter");
@@ -82,7 +82,7 @@ public class DBConfig {
     }
 
     @Bean
-    public MapperScannerConfigurer ucoreMapperScannerConfigurer() {
+    public static MapperScannerConfigurer ucoreMapperScannerConfigurer() {
         MapperScannerConfigurer configurer = new MapperScannerConfigurer();
         configurer.setSqlSessionTemplateBeanName("ucoreSqlSessionTemplate");
         configurer.setBasePackage("com.weidai.dataMigration.dal.ucore");

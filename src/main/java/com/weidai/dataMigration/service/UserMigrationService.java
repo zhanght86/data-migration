@@ -180,8 +180,12 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
         userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
         loginStatusDOMapper.insertBatch(loginStatusDOList);
         registerInfoDOMapper.insertBatch(registerInfoDOList);
-        tenderInfoDOMapper.insertBatch(tenderInfoDOList);
-        borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
+        if (!tenderInfoDOList.isEmpty()) {
+            tenderInfoDOMapper.insertBatch(tenderInfoDOList);
+        }
+        if (!borrowerInfoDOList.isEmpty()) {
+            borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
+        }
     }
 
     private Map<Integer, List<RoleInfoDTO>> transferRoleInfoListToMap(List<RoleInfoDTO> roleInfoList) {
