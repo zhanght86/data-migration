@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UserMigrationHolder {
 
-    public static final int CHUNK_SIZE = 100_1000;
+    public static final int PAGE_SIZE = 10_000;
 
     public static final AtomicInteger INVALID_COUNT = new AtomicInteger(0);
 

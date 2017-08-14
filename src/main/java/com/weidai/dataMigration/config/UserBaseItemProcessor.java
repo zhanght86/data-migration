@@ -6,21 +6,34 @@ package com.weidai.dataMigration.config;
 import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.util.UserMigrationHolder;
 import com.weidai.ucore.facade.constant.UserTypeEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wuqi 2017/8/9 0009.
  */
-public class UserBaseItemProcessor implements ItemProcessor<UserBaseDo, UserBaseDo> {
-    
+public class UserBaseItemProcessor implements ItemProcessor<List<UserBaseDo>, List<UserBaseDo>> {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserBaseItemProcessor.class);
+
     @Override
-    public UserBaseDo process(UserBaseDo userBaseDo) throws Exception {
-        if (StringUtils.hasText(userBaseDo.getMobile()) && isValid(userBaseDo) && isNotEmployee(userBaseDo)) {
-            return userBaseDo;
+    public List<UserBaseDo> process(List<UserBaseDo> list) throws Exception {
+        List<UserBaseDo> results = new ArrayList<>(list.size());
+        long cur = System.currentTimeMillis();
+        for (UserBaseDo userBaseDo : list) {
+            if (StringUtils.hasText(userBaseDo.getMobile()) && isValid(userBaseDo) && isNotEmployee(userBaseDo)) {
+                results.add(userBaseDo);
+            } else {
+                UserMigrationHolder.INVALID_COUNT.getAndIncrement();
+            }
         }
-        UserMigrationHolder.INVALID_COUNT.getAndIncrement();
-        return null;
+        logger.info("UserBaseItemProcessor costs: {}ms", System.currentTimeMillis() - cur);
+        return results.isEmpty() ? null : results;
     }
 
     private boolean isValid(UserBaseDo userBaseDo) {

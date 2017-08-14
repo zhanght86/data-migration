@@ -7,7 +7,6 @@ import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.service.UserMigrationService;
 import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -17,12 +16,12 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
+import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
-import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * @author wuqi 2017/8/1 0001.
@@ -41,8 +40,8 @@ public class BatchConfig {
     }
 
     @Bean
-    public StepBuilderFactory stepBuilderFactory(JobRepository jobRepository, DataSourceTransactionManager transactionManager){
-        return new StepBuilderFactory(jobRepository, transactionManager);
+    public StepBuilderFactory stepBuilderFactory(JobRepository jobRepository){
+        return new StepBuilderFactory(jobRepository, new ResourcelessTransactionManager());
     }
 
     @Bean
@@ -54,11 +53,11 @@ public class BatchConfig {
     }
 
     @Bean
-    public MyBatisPagingItemReader<UserBaseDo> myBatisPagingItemReader(@Qualifier("ucenterSSF") SqlSessionFactory sqlSessionFactory) {
-        MyBatisPagingItemReader<UserBaseDo> itemReader = new MyBatisPagingItemReader<>();
+    public DataMigrationItemReader<List<UserBaseDo>> dataMigrationItemReader(@Qualifier("ucenterSSF") SqlSessionFactory sqlSessionFactory) {
+        DataMigrationItemReader<List<UserBaseDo>> itemReader = new DataMigrationItemReader<>();
         itemReader.setSqlSessionFactory(sqlSessionFactory);
         itemReader.setQueryId("com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper.listByPage");
-        itemReader.setPageSize(UserMigrationHolder.CHUNK_SIZE);
+        itemReader.setPageSize(UserMigrationHolder.PAGE_SIZE);
         return itemReader;
     }
 
@@ -73,18 +72,18 @@ public class BatchConfig {
     }
     
     @Bean
-    public DataMigrationItemWriter<UserBaseDo> dataMigrationItemWriter(UserMigrationService userMigrationService) {
-        DataMigrationItemWriter<UserBaseDo> itemWriter = new DataMigrationItemWriter<>();
+    public DataMigrationItemWriter<List<UserBaseDo>> dataMigrationItemWriter(UserMigrationService userMigrationService) {
+        DataMigrationItemWriter<List<UserBaseDo>> itemWriter = new DataMigrationItemWriter<>();
         itemWriter.setMigrationService(userMigrationService);
         return itemWriter;
     }
 
     @Bean
     @Qualifier("step1")
-    public Step step(StepBuilderFactory stepBuilderFactory, MyBatisPagingItemReader<UserBaseDo> itemReader, UserBaseItemProcessor itemProcessor,
-            DataMigrationItemWriter<UserBaseDo> itemWriter) {
+    public Step step(StepBuilderFactory stepBuilderFactory, DataMigrationItemReader<List<UserBaseDo>> itemReader, UserBaseItemProcessor itemProcessor,
+            DataMigrationItemWriter<List<UserBaseDo>> itemWriter) {
         return stepBuilderFactory.get("step1")
-                .<UserBaseDo, UserBaseDo> chunk(UserMigrationHolder.CHUNK_SIZE)
+                .<List<UserBaseDo>, List<UserBaseDo>> chunk(1)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)

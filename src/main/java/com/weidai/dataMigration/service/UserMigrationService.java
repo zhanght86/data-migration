@@ -3,6 +3,7 @@
  */
 package com.weidai.dataMigration.service;
 
+import com.weidai.dataMigration.config.FixedThreadPoolFactory;
 import com.weidai.dataMigration.dal.ucenter.BorrowerDoMapper;
 import com.weidai.dataMigration.dal.ucenter.TenderDoMapper;
 import com.weidai.dataMigration.dal.ucenter.UserBaseExtendDoMapper;
@@ -12,18 +13,23 @@ import com.weidai.dataMigration.domain.*;
 import com.weidai.dataMigration.util.UserMigrationHolder;
 import com.weidai.ucore.facade.constant.UserTypeEnum;
 import com.weidai.ucore.facade.domain.*;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author wuqi 2017/8/4 0004.
  */
 @Service
-public class UserMigrationService implements MigrationService<UserBaseDo> {
+public class UserMigrationService implements MigrationService<List<UserBaseDo>>, InitializingBean{
 
     private static final Logger logger = LoggerFactory.getLogger(UserMigrationService.class);
 
@@ -59,16 +65,25 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
 
     @Autowired
     private BorrowerInfoDOMapper borrowerInfoDOMapper;
+    
+    @Autowired
+    @Qualifier("ucoreSST")
+    private SqlSessionTemplate sqlSessionTemplate;
+    
+    private ExecutorService executorService;
 
     @Override
-    public void migrate(List<? extends UserBaseDo> itemList) {
-        itemList = mergeList(itemList);
-        trimList(itemList);
-        Map<String, UserInfoWrapper> userMap = new HashMap<>(itemList.size());
-        Set<Integer> uids = new HashSet<>(itemList.size());
+    public void migrate(List<? extends List<UserBaseDo>> itemList) {
+        List<UserBaseDo> targetList = itemList.get(0);
+        logger.info("Executing migration with {} items, invalid count: {}", targetList.size(), UserMigrationHolder.PAGE_SIZE - targetList.size());
+        long preStart = System.currentTimeMillis();
+        targetList = mergeList(targetList);
+        trimList(targetList);
+        Map<String, UserInfoWrapper> userMap = new HashMap<>(targetList.size());
+        Set<Integer> uids = new HashSet<>(targetList.size());
         Set<Integer> borrowerIds = new HashSet<>();
         Set<Integer> tenderIds = new HashSet<>();
-        for (UserBaseDo userBaseDo : itemList) {
+        for (UserBaseDo userBaseDo : targetList) {
             if (!userMap.containsKey(userBaseDo.getMobile())) {
                 userMap.put(userBaseDo.getMobile(), new UserInfoWrapper());
             }
@@ -89,8 +104,15 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             return;
         }
         if (!borrowerIds.isEmpty()) {
+            long ubStart = System.currentTimeMillis();
             List<UserBaseExtendDo> userBaseExtendList = userBaseExtendDoMapper.selectUserBaseExtendIn(borrowerIds);
+            long ubEnd = System.currentTimeMillis();
+            logger.info("query u_base_extend costs: {}ms, uid size: {}", ubEnd - ubStart, borrowerIds.size());
+
+            long boStart = System.currentTimeMillis();
             List<BorrowerDo> borrowerList = borrowerDoMapper.selectBorrowerIn(borrowerIds);
+            long boEnd = System.currentTimeMillis();
+            logger.info("query u_borrower costs: {}ms, uid size: {}", boEnd - boStart, borrowerIds.size());
             if ((userBaseExtendList != null && userBaseExtendList.size() > 0) || (borrowerList != null && borrowerList.size() > 0)) {
                 Map<Integer, UserBaseExtendDo> userBaseExtendMap = transferUserBaseExtendListToMap(userBaseExtendList);
                 Map<Integer, BorrowerDo> borrowerMap = transferBorrowerListToMap(borrowerList);
@@ -107,7 +129,10 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             }
         }
         if (!tenderIds.isEmpty()) {
+            long toStart = System.currentTimeMillis();
             List<TenderDo> tenderList = tenderDoMapper.selectTenderIn(tenderIds);
+            long toEnd = System.currentTimeMillis();
+            logger.info("query u_tender costs: {}ms, uid size: {}", toEnd - toStart, tenderIds.size());
             if (tenderList != null && tenderList.size() > 0) {
                 Map<Integer, TenderDo> tenderMap = transferTenderListToMap(tenderList);
                 for (UserInfoWrapper wrapper : userMap.values()) {
@@ -117,7 +142,10 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
                 }
             }
         }
+        long riStart = System.currentTimeMillis();
         List<RoleInfoDTO> roleInfoList = userRoleInfoDoMapper.selectRoleInfoIn(uids);
+        long riEnd = System.currentTimeMillis();
+        logger.info("query u_role_info costs: {}ms, uid size: {}", riEnd - riStart, uids.size());
         if (roleInfoList != null && roleInfoList.size() > 0) {
             Map<Integer, List<RoleInfoDTO>> roleInfoMap = transferRoleInfoListToMap(roleInfoList);
             for (UserInfoWrapper wrapper : userMap.values()) {
@@ -130,9 +158,9 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
         }
         List<UserDO> userDOList = new ArrayList<>(userMap.size());
         List<UserExtendDO> userExtendDOList = new ArrayList<>(userMap.size());
-        List<UserSubAccountDO> userSubAccountDOList = new ArrayList<>(itemList.size());
+        List<UserSubAccountDO> userSubAccountDOList = new ArrayList<>(targetList.size());
         List<LoginStatusDO> loginStatusDOList = new ArrayList<>(userMap.size());
-        List<RegisterInfoDO> registerInfoDOList = new ArrayList<>(itemList.size());
+        List<RegisterInfoDO> registerInfoDOList = new ArrayList<>(targetList.size());
         List<TenderInfoDO> tenderInfoDOList = new ArrayList<>();
         List<BorrowerInfoDO> borrowerInfoDOList = new ArrayList<>();
         for (UserInfoWrapper wrapper : userMap.values()) {
@@ -149,42 +177,136 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
                 borrowerInfoDOList.add(wrapper.getBorrowerInfoDO());
             }
         }
+        long preEnd = System.currentTimeMillis();
+        logger.info("prepare data costs: {}ms", preEnd - preStart);
         doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
+        long mEnd = System.currentTimeMillis();
+        logger.info("concurrent batch insert data costs: {}ms", mEnd - preEnd);
     }
 
-    private List<? extends UserBaseDo> mergeList(List<? extends UserBaseDo> itemList) {
-        List<UserBaseDo> mergedList = new ArrayList<>(itemList.size());
+    private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
+        List<UserBaseDo> mergedList = new ArrayList<>(list.size());
         mergedList.addAll(UserMigrationHolder.TAIL_ITEMS);
-        mergedList.addAll(itemList);
+        mergedList.addAll(list);
         UserMigrationHolder.TAIL_ITEMS.clear();
         return mergedList;
     }
 
-    private void trimList(List<? extends UserBaseDo> itemList) {
-        UserBaseDo lastItem = itemList.remove(itemList.size() - 1);
+    private void trimList(List<UserBaseDo> list) {
+        UserBaseDo lastItem = list.remove(list.size() - 1);
         UserMigrationHolder.TAIL_ITEMS.add(lastItem);
         String cur = lastItem.getMobile();
-        for (int i = itemList.size() - 1; i >= 0; i--) {
-            if (!cur.equals(itemList.get(i).getMobile())) {
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (!cur.equals(list.get(i).getMobile())) {
                 break;
             }
-            UserMigrationHolder.TAIL_ITEMS.add(itemList.remove(i));
+            UserMigrationHolder.TAIL_ITEMS.add(list.remove(i));
         }
     }
 
-    private void doMigrate(List<UserDO> userDOList, List<UserExtendDO> userExtendDOList, List<UserSubAccountDO> userSubAccountDOList,
-            List<LoginStatusDO> loginStatusDOList, List<RegisterInfoDO> registerInfoDOList, List<TenderInfoDO> tenderInfoDOList,
-            List<BorrowerInfoDO> borrowerInfoDOList) {
-        userDOMapper.insertBatchWithId(userDOList);
-        userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
-        userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
-        loginStatusDOMapper.insertBatch(loginStatusDOList);
-        registerInfoDOMapper.insertBatch(registerInfoDOList);
-        if (!tenderInfoDOList.isEmpty()) {
-            tenderInfoDOMapper.insertBatch(tenderInfoDOList);
-        }
-        if (!borrowerInfoDOList.isEmpty()) {
-            borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
+    private void doMigrate(final List<UserDO> userDOList, final List<UserExtendDO> userExtendDOList, final List<UserSubAccountDO> userSubAccountDOList,
+                           final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
+                           final List<BorrowerInfoDO> borrowerInfoDOList) {
+        final CountDownLatch latch = new CountDownLatch(7);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long udStart = System.currentTimeMillis();
+                    userDOMapper.insertBatchWithId(userDOList);
+                    long udEnd = System.currentTimeMillis();
+                    logger.info("batch insert u_user costs: {}ms, size: {}", udEnd - udStart, userDOList.size());
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long uedStart = System.currentTimeMillis();
+                    userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
+                    long uedEnd = System.currentTimeMillis();
+                    logger.info("batch insert u_user_extend costs: {}ms, size: {}", uedEnd - uedStart, userExtendDOList.size());
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long usdStart = System.currentTimeMillis();
+                    userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
+                    long usdEnd = System.currentTimeMillis();
+                    logger.info("batch insert u_sub_account costs: {}ms, size: {}", usdEnd - usdStart, userSubAccountDOList.size());
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long lsdStart = System.currentTimeMillis();
+                    loginStatusDOMapper.insertBatch(loginStatusDOList);
+                    long lsdEnd = System.currentTimeMillis();
+                    logger.info("batch insert u_login_status costs: {}ms, size: {}", lsdEnd - lsdStart, loginStatusDOList.size());
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long ridStart = System.currentTimeMillis();
+                    registerInfoDOMapper.insertBatch(registerInfoDOList);
+                    long ridEnd = System.currentTimeMillis();
+                    logger.info("batch insert u_register_info costs: {}ms, size: {}", ridEnd - ridStart, registerInfoDOList.size());
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!tenderInfoDOList.isEmpty()) {
+                        long tidStart = System.currentTimeMillis();
+                        tenderInfoDOMapper.insertBatch(tenderInfoDOList);
+                        long tidEnd = System.currentTimeMillis();
+                        logger.info("batch insert u_tender_info costs: {}ms, size: {}", tidEnd - tidStart, tenderInfoDOList.size());
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!borrowerInfoDOList.isEmpty()) {
+                        long bidStart = System.currentTimeMillis();
+                        borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
+                        long bidEnd = System.currentTimeMillis();
+                        logger.info("batch insert u_borrower_info costs: {}ms, size: {}", bidEnd - bidStart, borrowerInfoDOList.size());
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            logger.error("migration thread was interrupted!", e);
         }
     }
 
@@ -221,5 +343,10 @@ public class UserMigrationService implements MigrationService<UserBaseDo> {
             map.put(userBaseExtendDo.getUid(), userBaseExtendDo);
         }
         return map;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        executorService = FixedThreadPoolFactory.getInstance().getThreadPool(7, "batch-insert-thread");
     }
 }
