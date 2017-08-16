@@ -5,7 +5,6 @@ package com.weidai.dataMigration.config;
 
 import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.util.UserMigrationHolder;
-import com.weidai.ucore.facade.constant.UserTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -40,10 +39,11 @@ public class UserBaseItemProcessor implements ItemProcessor<List<UserBaseDo>, Li
         if (userBaseDo.getStatus() != null) {
             return userBaseDo.getStatus().equals(0) || userBaseDo.getStatus().equals(2);
         }
-        return true;
+        return false;
     }
 
     private boolean isNotEmployee(UserBaseDo userBaseDo) {
-        return userBaseDo.getUserType() != null && UserTypeEnum.getEnumByCode(userBaseDo.getUserType()) != null;
+        return userBaseDo.getUserType() != null && (userBaseDo.getUserType().equals(1) || userBaseDo.getUserType().equals(2)
+                || userBaseDo.getUserType().equals(4) || userBaseDo.getUserType().equals(7) || userBaseDo.getUserType().equals(9));
     }
 }

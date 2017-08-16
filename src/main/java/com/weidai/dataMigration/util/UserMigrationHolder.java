@@ -16,7 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UserMigrationHolder {
 
-    public static final int PAGE_SIZE = 10_000;
+    public static volatile Integer PAGE_SIZE;
+
+    public static volatile Integer MAX_UID;
+
+    public static volatile Integer TOTAL_PAGE;
+
+    public static volatile Integer CURRENT_PAGE;
 
     public static final AtomicInteger INVALID_COUNT = new AtomicInteger(0);
 
@@ -36,5 +42,9 @@ public class UserMigrationHolder {
 
     public static Integer getRegWay(String channelCode){
         return CHANNEL_MAP.get(channelCode);
+    }
+
+    public static boolean isLastPage(){
+        return CURRENT_PAGE == TOTAL_PAGE - 1;
     }
 }

@@ -3,6 +3,7 @@
  */
 package com.weidai.dataMigration.config;
 
+import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -24,8 +25,10 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     private static final Logger logger = LoggerFactory.getLogger(DataMigrationItemReader.class);
 
-    private int pageSize = 10;
+    private volatile Integer pageSize;
 
+    private volatile Integer maxUid;
+    
     private volatile int page = 0;
 
     private volatile boolean initialized = false;
@@ -40,12 +43,12 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     private Map<String, Object> parameterValues;
 
-    public int getPageSize() {
-        return pageSize;
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
     }
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    public void setMaxUid(Integer maxUid) {
+        this.maxUid = maxUid;
     }
 
     public int getPage() {
@@ -71,6 +74,12 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
     @Override
     protected T doRead() throws Exception {
         synchronized (lock) {
+            if (pageSize == null) {
+                pageSize = UserMigrationHolder.PAGE_SIZE;
+            }
+            if (maxUid == null && UserMigrationHolder.MAX_UID != null) {
+                maxUid = UserMigrationHolder.MAX_UID;
+            }
             Map<String, Object> parameters = new HashMap<>();
             if (parameterValues != null) {
                 parameters.putAll(parameterValues);
@@ -78,10 +87,12 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
             parameters.put("_page", page);
             parameters.put("_pagesize", pageSize);
             parameters.put("_skiprows", page * pageSize);
+            parameters.put("maxUid", maxUid);
             long cur = System.currentTimeMillis();
             List<?> results = sqlSessionTemplate.selectList(queryId, parameters);
-            logger.info("query No.{} page costs: {}ms", page + 1, System.currentTimeMillis() - cur);
+            logger.info("query No.{} page costs: {}ms, result size: {}", page + 1, System.currentTimeMillis() - cur, results.size());
             if (results != null && !results.isEmpty()) {
+                UserMigrationHolder.CURRENT_PAGE = page;
                 page++;
                 return (T) results;
             }
@@ -105,7 +116,6 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.isTrue(pageSize > 0, "pageSize must be greater than zero");
         Assert.notNull(sqlSessionFactory, "sqlSessionFactory mustn't be null");
         sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory, ExecutorType.BATCH);
         Assert.notNull(queryId, "queryId mustn't ne null");

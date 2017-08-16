@@ -70,7 +70,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     @Qualifier("ucoreSST")
     private SqlSessionTemplate sqlSessionTemplate;
     
-    private ExecutorService executorService;
+    public static ExecutorService executorService;
 
     @Override
     public void migrate(List<? extends List<UserBaseDo>> itemList) {
@@ -78,7 +78,9 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         logger.info("Executing migration with {} items, invalid count: {}", targetList.size(), UserMigrationHolder.PAGE_SIZE - targetList.size());
         long preStart = System.currentTimeMillis();
         targetList = mergeList(targetList);
-        trimList(targetList);
+        if (!UserMigrationHolder.isLastPage()) {
+            trimList(targetList);
+        }
         Map<String, UserInfoWrapper> userMap = new HashMap<>(targetList.size());
         Set<Integer> uids = new HashSet<>(targetList.size());
         Set<Integer> borrowerIds = new HashSet<>();
@@ -181,7 +183,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         logger.info("prepare data costs: {}ms", preEnd - preStart);
         doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
         long mEnd = System.currentTimeMillis();
-        logger.info("concurrent batch insert data costs: {}ms", mEnd - preEnd);
+        logger.info("batch insert data costs: {}ms", mEnd - preEnd);
     }
 
     private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
@@ -207,41 +209,50 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     private void doMigrate(final List<UserDO> userDOList, final List<UserExtendDO> userExtendDOList, final List<UserSubAccountDO> userSubAccountDOList,
                            final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
                            final List<BorrowerInfoDO> borrowerInfoDOList) {
-        final CountDownLatch latch = new CountDownLatch(7);
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
+        if (!userDOList.isEmpty()) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
                     long udStart = System.currentTimeMillis();
                     userDOMapper.insertBatchWithId(userDOList);
                     long udEnd = System.currentTimeMillis();
                     logger.info("batch insert u_user costs: {}ms, size: {}", udEnd - udStart, userDOList.size());
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
+            });
+        }
+        if (!userExtendDOList.isEmpty()) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
                     long uedStart = System.currentTimeMillis();
                     userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
                     long uedEnd = System.currentTimeMillis();
                     logger.info("batch insert u_user_extend costs: {}ms, size: {}", uedEnd - uedStart, userExtendDOList.size());
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
+            });
+        }
+        if (!userSubAccountDOList.isEmpty()) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
                     long usdStart = System.currentTimeMillis();
                     userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
                     long usdEnd = System.currentTimeMillis();
                     logger.info("batch insert u_sub_account costs: {}ms, size: {}", usdEnd - usdStart, userSubAccountDOList.size());
+                }
+            });
+        }
+        final CountDownLatch latch = new CountDownLatch(4);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!loginStatusDOList.isEmpty()) {
+                        long lsdStart = System.currentTimeMillis();
+                        loginStatusDOMapper.insertBatch(loginStatusDOList);
+                        long lsdEnd = System.currentTimeMillis();
+                        logger.info("batch insert u_login_status costs: {}ms, size: {}", lsdEnd - lsdStart, loginStatusDOList.size());
+                    }
                 } finally {
                     latch.countDown();
                 }
@@ -251,23 +262,12 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             @Override
             public void run() {
                 try {
-                    long lsdStart = System.currentTimeMillis();
-                    loginStatusDOMapper.insertBatch(loginStatusDOList);
-                    long lsdEnd = System.currentTimeMillis();
-                    logger.info("batch insert u_login_status costs: {}ms, size: {}", lsdEnd - lsdStart, loginStatusDOList.size());
-                } finally {
-                    latch.countDown();
-                }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    long ridStart = System.currentTimeMillis();
-                    registerInfoDOMapper.insertBatch(registerInfoDOList);
-                    long ridEnd = System.currentTimeMillis();
-                    logger.info("batch insert u_register_info costs: {}ms, size: {}", ridEnd - ridStart, registerInfoDOList.size());
+                    if (!registerInfoDOList.isEmpty()) {
+                        long ridStart = System.currentTimeMillis();
+                        registerInfoDOMapper.insertBatch(registerInfoDOList);
+                        long ridEnd = System.currentTimeMillis();
+                        logger.info("batch insert u_register_info costs: {}ms, size: {}", ridEnd - ridStart, registerInfoDOList.size());
+                    }
                 } finally {
                     latch.countDown();
                 }
@@ -347,6 +347,6 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        executorService = FixedThreadPoolFactory.getInstance().getThreadPool(7, "batch-insert-thread");
+        executorService = FixedThreadPoolFactory.getInstance().getThreadPool(7, 15, "batch-insert-thread");
     }
 }

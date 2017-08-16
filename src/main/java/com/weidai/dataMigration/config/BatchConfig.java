@@ -5,7 +5,6 @@ package com.weidai.dataMigration.config;
 
 import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.service.UserMigrationService;
-import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -18,7 +17,8 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import java.util.List;
@@ -57,8 +57,14 @@ public class BatchConfig {
         DataMigrationItemReader<List<UserBaseDo>> itemReader = new DataMigrationItemReader<>();
         itemReader.setSqlSessionFactory(sqlSessionFactory);
         itemReader.setQueryId("com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper.listByPage");
-        itemReader.setPageSize(UserMigrationHolder.PAGE_SIZE);
         return itemReader;
+    }
+
+    @Bean
+    public DataMigrationItemWriter<List<UserBaseDo>> dataMigrationItemWriter(UserMigrationService userMigrationService) {
+        DataMigrationItemWriter<List<UserBaseDo>> itemWriter = new DataMigrationItemWriter<>();
+        itemWriter.setMigrationService(userMigrationService);
+        return itemWriter;
     }
 
     @Bean
@@ -70,17 +76,9 @@ public class BatchConfig {
     public DataMigrationCompletionListener listener(){
         return new DataMigrationCompletionListener();
     }
-    
-    @Bean
-    public DataMigrationItemWriter<List<UserBaseDo>> dataMigrationItemWriter(UserMigrationService userMigrationService) {
-        DataMigrationItemWriter<List<UserBaseDo>> itemWriter = new DataMigrationItemWriter<>();
-        itemWriter.setMigrationService(userMigrationService);
-        return itemWriter;
-    }
 
     @Bean
-    @Qualifier("step1")
-    public Step step(StepBuilderFactory stepBuilderFactory, DataMigrationItemReader<List<UserBaseDo>> itemReader, UserBaseItemProcessor itemProcessor,
+    public Step step1(StepBuilderFactory stepBuilderFactory, DataMigrationItemReader<List<UserBaseDo>> itemReader, UserBaseItemProcessor itemProcessor,
             DataMigrationItemWriter<List<UserBaseDo>> itemWriter) {
         return stepBuilderFactory.get("step1")
                 .<List<UserBaseDo>, List<UserBaseDo>> chunk(1)
@@ -91,11 +89,11 @@ public class BatchConfig {
     }
 
     @Bean
-    public Job userMigrationJob(JobBuilderFactory jobBuilderFactory, @Qualifier("step1") Step step, DataMigrationCompletionListener listener) {
+    public Job dataMigrationJob(JobBuilderFactory jobBuilderFactory, Step step1, DataMigrationCompletionListener listener) {
         return jobBuilderFactory.get("dataMigrationJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
-                .start(step)
+                .start(step1)
                 .build();
     }
 }
