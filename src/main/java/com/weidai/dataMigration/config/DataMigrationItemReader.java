@@ -25,10 +25,6 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     private static final Logger logger = LoggerFactory.getLogger(DataMigrationItemReader.class);
 
-    private volatile Integer pageSize;
-
-    private volatile Integer maxUid;
-    
     private volatile int page = 0;
 
     private volatile boolean initialized = false;
@@ -43,30 +39,6 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     private Map<String, Object> parameterValues;
 
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public void setMaxUid(Integer maxUid) {
-        this.maxUid = maxUid;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public void setQueryId(String queryId) {
-        this.queryId = queryId;
-    }
-
-    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
-        this.sqlSessionFactory = sqlSessionFactory;
-    }
-
-    public void setParameterValues(Map<String, Object> parameterValues) {
-        this.parameterValues = parameterValues;
-    }
-
     public DataMigrationItemReader() {
         super.setName(ClassUtils.getShortName(DataMigrationItemReader.class));
     }
@@ -74,26 +46,19 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
     @Override
     protected T doRead() throws Exception {
         synchronized (lock) {
-            if (pageSize == null) {
-                pageSize = UserMigrationHolder.PAGE_SIZE;
-            }
-            if (maxUid == null && UserMigrationHolder.MAX_UID != null) {
-                maxUid = UserMigrationHolder.MAX_UID;
-            }
-            Map<String, Object> parameters = new HashMap<>();
-            if (parameterValues != null) {
-                parameters.putAll(parameterValues);
-            }
-            parameters.put("_page", page);
-            parameters.put("_pagesize", pageSize);
-            parameters.put("_skiprows", page * pageSize);
-            parameters.put("maxUid", maxUid);
-            long cur = System.currentTimeMillis();
-            List<?> results = sqlSessionTemplate.selectList(queryId, parameters);
-            logger.info("query No.{} page costs: {}ms, result size: {}", page + 1, System.currentTimeMillis() - cur, results.size());
-            if (results != null && !results.isEmpty()) {
-                UserMigrationHolder.CURRENT_PAGE = page;
-                page++;
+            if (page < UserMigrationHolder.TOTAL_PAGE) {
+                Map<String, Object> parameters = new HashMap<>();
+                if (parameterValues != null) {
+                    parameters.putAll(parameterValues);
+                }
+                parameters.put("_page", page);
+                parameters.put("_pagesize", UserMigrationHolder.PAGE_SIZE);
+                parameters.put("_skiprows", page * UserMigrationHolder.PAGE_SIZE);
+                parameters.put("maxUid", UserMigrationHolder.MAX_UID);
+                long cur = System.currentTimeMillis();
+                List<?> results = sqlSessionTemplate.selectList(queryId, parameters);
+                logger.info("query No.{} page costs: {}ms, result size: {}", page + 1, System.currentTimeMillis() - cur, results.size());
+                UserMigrationHolder.CURRENT_PAGE = page++;
                 return (T) results;
             }
             return null;
@@ -116,8 +81,24 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        Assert.notNull(queryId, "queryId mustn't ne null");
         Assert.notNull(sqlSessionFactory, "sqlSessionFactory mustn't be null");
         sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory, ExecutorType.BATCH);
-        Assert.notNull(queryId, "queryId mustn't ne null");
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setQueryId(String queryId) {
+        this.queryId = queryId;
+    }
+
+    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
+        this.sqlSessionFactory = sqlSessionFactory;
+    }
+
+    public void setParameterValues(Map<String, Object> parameterValues) {
+        this.parameterValues = parameterValues;
     }
 }
