@@ -23,13 +23,13 @@ public class DataMigrationCompletionListener extends JobExecutionListenerSupport
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            logger.info("!!! JOB FINISHED! INVALID_COUNT: {}", UserMigrationHolder.INVALID_COUNT.get());
             try {
                 // 等待所有已提交的任务完成，最多等待60s
                 UserMigrationService.executorService.awaitTermination(60, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
+            logger.info("!!! JOB FINISHED! INVALID_COUNT: {}", UserMigrationHolder.INVALID_COUNT.get());
         }
     }
 }

@@ -37,7 +37,7 @@ public class JobLauncherController {
     }
 
     @GetMapping("/run")
-    public void runJob(@RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize, Integer maxUid) throws Exception {
+    public void runJob(@RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize, @RequestParam(name = "maxUid") Integer maxUid) throws Exception {
         UserMigrationHolder.PAGE_SIZE = pageSize;
         UserMigrationHolder.MAX_UID = maxUid;
         int count = userBaseDoMapper.count(maxUid);

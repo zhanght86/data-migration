@@ -63,12 +63,12 @@
 	</Appenders>
 
 	<Loggers>
-		<!--<Logger name="com.weidai.dataMigration.dal" level="info" additivity="false">-->
-			<!--<AppenderRef ref="debug_log"/>-->
-			<!--<AppenderRef ref="info_log"/>-->
-			<!--<AppenderRef ref="warn_log"/>-->
-			<!--<AppenderRef ref="error_log"/>-->
-		<!--</Logger>-->
+		<Logger name="jdbc.support" level="debug" additivity="false">
+			<AppenderRef ref="debug_log"/>
+			<AppenderRef ref="info_log"/>
+			<AppenderRef ref="warn_log"/>
+			<AppenderRef ref="error_log"/>
+		</Logger>
 		<Root level="info">
 			<AppenderRef ref="console"/>
 			<AppenderRef ref="debug_log"/>

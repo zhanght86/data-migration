@@ -80,6 +80,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             trimList(targetList);
         }
         logger.info("migrate current batch data, size: {}", targetList.size());
+        String[] markArr = { targetList.get(0).getMobile(), targetList.get(targetList.size() - 1).getMobile() };
         long preStart = System.currentTimeMillis();
         Map<String, UserInfoWrapper> userMap = new HashMap<>(targetList.size());
         Set<Integer> uids = new HashSet<>(targetList.size());
@@ -109,7 +110,6 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         if (!borrowerIds.isEmpty()) {
             start = System.currentTimeMillis();
             List<UserBaseExtendDo> userBaseExtendList = userBaseExtendDoMapper.selectUserBaseExtendIn(borrowerIds);
-            long ubEnd = System.currentTimeMillis();
             logger.info("query u_base_extend costs: {}ms, uid size: {}", System.currentTimeMillis() - start, borrowerIds.size());
 
             start = System.currentTimeMillis();
@@ -178,7 +178,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             }
         }
         logger.info("prepare data costs: {}ms", System.currentTimeMillis() - preStart);
-        doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList);
+        doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList, markArr);
     }
 
     private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
@@ -202,15 +202,20 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     }
 
     private void doMigrate(final List<UserDO> userDOList, final List<UserExtendDO> userExtendDOList, final List<UserSubAccountDO> userSubAccountDOList,
-                           final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
-                           final List<BorrowerInfoDO> borrowerInfoDOList) {
+            final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
+            final List<BorrowerInfoDO> borrowerInfoDOList, final String[] markArr) {
         if (!userDOList.isEmpty()) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    long start = System.currentTimeMillis();
-                    userDOMapper.insertBatchWithId(userDOList);
-                    logger.info("batch insert u_user costs: {}ms, size: {}", System.currentTimeMillis() - start, userDOList.size());
+                    try {
+                        long start = System.currentTimeMillis();
+                        userDOMapper.insertBatchWithId(userDOList);
+                        logger.info("batch insert u_user costs: {}ms, size: {}", System.currentTimeMillis() - start, userDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    }
                 }
             });
         }
@@ -218,9 +223,14 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    long start = System.currentTimeMillis();
-                    userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
-                    logger.info("batch insert u_user_extend costs: {}ms, size: {}", System.currentTimeMillis() - start, userExtendDOList.size());
+                    try {
+                        long start = System.currentTimeMillis();
+                        userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
+                        logger.info("batch insert u_user_extend costs: {}ms, size: {}", System.currentTimeMillis() - start, userExtendDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    }
                 }
             });
         }
@@ -228,9 +238,14 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    long start = System.currentTimeMillis();
-                    userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
-                    logger.info("batch insert u_sub_account costs: {}ms, size: {}", System.currentTimeMillis() - start, userSubAccountDOList.size());
+                    try {
+                        long start = System.currentTimeMillis();
+                        userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
+                        logger.info("batch insert u_sub_account costs: {}ms, size: {}", System.currentTimeMillis() - start, userSubAccountDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    }
                 }
             });
         }

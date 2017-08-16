@@ -138,10 +138,13 @@ public class UserInfoWrapper {
         borrowerInfoDO.setWeChatBindTime(borrowerDo.getBindWeixinTime());
         if (StringUtils.hasText(borrowerDo.getBorrowIntention())) {
             try {
-                borrowerInfoDO.setBorrowIntention(Integer.parseInt(borrowerDo.getBorrowIntention()));
+                int borrowIntention = Integer.parseInt(borrowerDo.getBorrowIntention());
+                if (borrowIntention <= 255 && borrowIntention >= 0) {
+                    borrowerInfoDO.setBorrowIntention(borrowIntention);
+                }
             } catch (Exception e) {}
         }
-        if (userBaseExtendDo != null) {
+        if (userBaseExtendDo != null && userBaseExtendDo.getDrivingLicence() < 2) {
             borrowerInfoDO.setHasLicense(userBaseExtendDo.getDrivingLicence());
         }
         if (borrowerInfoDO.getHasLicense() == null) {
@@ -168,49 +171,84 @@ public class UserInfoWrapper {
         userExtendDO = new UserExtendDO();
         userExtendDO.setUserId(userDO.getId());
         if (userBaseExtendDo != null) {
-            BeanUtils.copyProperties(userBaseExtendDo, userExtendDO, "estateDesc", "carDesc", "workType", "compType");
+            BeanUtils.copyProperties(userBaseExtendDo, userExtendDO, "estateDesc", "carDesc", "workType", "compType", "localHousehold");
             userExtendDO.setCompName(userBaseExtendDo.getCompanyName());
             userExtendDO.setCreateTime(userBaseExtendDo.getCreatedTime());
             userExtendDO.setModifiedTime(userBaseExtendDo.getModifyTime());
             userExtendDO.setHouseInfo(userBaseExtendDo.getHouseEstate());
             if (StringUtils.hasText(userBaseExtendDo.getEstateDesc())) {
-                try{
-                    userExtendDO.setEstateDesc(Integer.parseInt(userBaseExtendDo.getEstateDesc()));
-                }catch(Exception e){}
+                try {
+                    int estateDesc = Integer.parseInt(userBaseExtendDo.getEstateDesc());
+                    if (estateDesc <= 255 && estateDesc >= 0) {
+                        userExtendDO.setEstateDesc(estateDesc);
+                    }
+                } catch (Exception e) {
+                }
             }
             if (StringUtils.hasText(userBaseExtendDo.getCarDesc())) {
-                try{
-                    userExtendDO.setCarDesc(Integer.parseInt(userBaseExtendDo.getCarDesc()));
-                }catch(Exception e){}
+                try {
+                    int carDesc = Integer.parseInt(userBaseExtendDo.getCarDesc());
+                    if (carDesc <= 255 && carDesc >= 0) {
+                        userExtendDO.setCarDesc(carDesc);
+                    }
+                } catch (Exception e) {
+                }
             }
             if (StringUtils.hasText(userBaseExtendDo.getWorkType())) {
-                try{
-                    userExtendDO.setWorkType(Integer.parseInt(userBaseExtendDo.getWorkType()));
-                }catch(Exception e){}
+                try {
+                    int workType = Integer.parseInt(userBaseExtendDo.getWorkType());
+                    if (workType <= 255 && workType >= 0) {
+                        userExtendDO.setWorkType(workType);
+                    }
+                } catch (Exception e) {
+                }
             }
             if (StringUtils.hasText(userBaseExtendDo.getCompType())) {
-                try{
-                    userExtendDO.setCompType(Integer.parseInt(userBaseExtendDo.getCompType()));
-                }catch(Exception e){}
+                try {
+                    int compType = Integer.parseInt(userBaseExtendDo.getCompType());
+                    if (compType <= 255 && compType >= 0) {
+                        userExtendDO.setCompType(compType);
+                    }
+                } catch (Exception e) {
+                }
             }
             if (StringUtils.hasText(userBaseExtendDo.getPayOffForm())) {
                 try {
-                    userExtendDO.setPayoffForm(Integer.parseInt(userBaseExtendDo.getPayOffForm()));
-                } catch (Exception e) {}
+                    int payoffForm = Integer.parseInt(userBaseExtendDo.getPayOffForm());
+                    if (payoffForm <= 255 && payoffForm >= 0) {
+                        userExtendDO.setPayoffForm(payoffForm);
+                    }
+                } catch (Exception e) {
+                }
             }
             if (StringUtils.hasText(userBaseExtendDo.getJobTitle())) {
                 try {
-                    userExtendDO.setJobLevel(Integer.parseInt(userBaseExtendDo.getJobTitle()));
-                } catch (Exception e) {}
+                    int jobLevel = Integer.parseInt(userBaseExtendDo.getJobTitle());
+                    if (jobLevel <= 255 && jobLevel >= 0) {
+                        userExtendDO.setJobLevel(jobLevel);
+                    }
+                } catch (Exception e) {
+                }
+            }
+            if (StringUtils.hasText(userBaseExtendDo.getLocalHousehold())) {
+                try {
+                    int localHousehold = Integer.parseInt(userBaseExtendDo.getLocalHousehold());
+                    if (localHousehold <= 255 && localHousehold >= 0) {
+                        userExtendDO.setLocalHousehold(localHousehold);
+                    }
+                } catch (Exception e) {
+                }
             }
         }
-        if (primary.getMarriage() == null || (primary.getMarriage() >= 0 && primary.getMarriage() <= 3)) {
-            userExtendDO.setMarriage(primary.getMarriage());
-        }
+        userExtendDO.setMarriage(primary.getMarriage());
         if (StringUtils.hasText(primary.getEducation())) {
             try {
-                userExtendDO.setEducation(Integer.parseInt(primary.getEducation()));
-            } catch (Exception e) {}
+                int education = Integer.parseInt(primary.getEducation());
+                if (education <= 255 && education >= 0) {
+                    userExtendDO.setEducation(education);
+                }
+            } catch (Exception e) {
+            }
         }
         userExtendDO.setAssetSituation(primary.getIshave());
         userExtendDO.setEmergencyName(primary.getEmergencyName());
@@ -219,9 +257,12 @@ public class UserInfoWrapper {
         userExtendDO.setAnnualIncome(primary.getAnnualIncome());
         if (userExtendDO.getCreateTime() == null) {
             userExtendDO.setCreateTime(primary.getCreateTime());
-        }
+    }
         if (userExtendDO.getModifiedTime() == null) {
             userExtendDO.setModifiedTime(primary.getUpdateTime());
+        }
+        if (userExtendDO.getAdministrativeLevel() != null && userExtendDO.getAdministrativeLevel().length() > 2) {
+            userExtendDO.setAdministrativeLevel(null);
         }
     }
 
@@ -287,9 +328,6 @@ public class UserInfoWrapper {
         userDO.setLoginStatus(primary.getStatus() == null ? 0 : primary.getStatus());
         if (userBaseExtendDo != null) {
             userDO.setVolk(userBaseExtendDo.getVolk());
-        }
-        if (userDO.getAge() != null && (userDO.getAge() > 999 || userDO.getAge() <= 0)) {
-            userDO.setAge(null);
         }
         userDO.setId(UserMigrationHolder.nextId());
     }
