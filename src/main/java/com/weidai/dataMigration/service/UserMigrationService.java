@@ -75,12 +75,12 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     @Override
     public void migrate(List<? extends List<UserBaseDo>> itemList) {
         List<UserBaseDo> targetList = itemList.get(0);
-        logger.info("Executing migration with {} items, invalid count: {}", targetList.size(), UserMigrationHolder.PAGE_SIZE - targetList.size());
         long preStart = System.currentTimeMillis();
         targetList = mergeList(targetList);
         if (!UserMigrationHolder.isLastPage()) {
             trimList(targetList);
         }
+        logger.info("migrate current batch data, size: {}", targetList.size());
         Map<String, UserInfoWrapper> userMap = new HashMap<>(targetList.size());
         Set<Integer> uids = new HashSet<>(targetList.size());
         Set<Integer> borrowerIds = new HashSet<>();

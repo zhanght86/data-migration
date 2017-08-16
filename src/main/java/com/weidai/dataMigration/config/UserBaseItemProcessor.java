@@ -23,7 +23,6 @@ public class UserBaseItemProcessor implements ItemProcessor<List<UserBaseDo>, Li
     @Override
     public List<UserBaseDo> process(List<UserBaseDo> list) throws Exception {
         List<UserBaseDo> results = new ArrayList<>(list.size());
-        long cur = System.currentTimeMillis();
         for (UserBaseDo userBaseDo : list) {
             if (StringUtils.hasText(userBaseDo.getMobile()) && isValid(userBaseDo) && isNotEmployee(userBaseDo)) {
                 results.add(userBaseDo);
@@ -31,7 +30,6 @@ public class UserBaseItemProcessor implements ItemProcessor<List<UserBaseDo>, Li
                 UserMigrationHolder.INVALID_COUNT.getAndIncrement();
             }
         }
-        logger.info("UserBaseItemProcessor costs: {}ms", System.currentTimeMillis() - cur);
         return results.isEmpty() ? null : results;
     }
 
