@@ -240,16 +240,8 @@ public class UserInfoWrapper {
                 }
             }
         }
+        userExtendDO.setEducation(primary.getEducation());
         userExtendDO.setMarriage(primary.getMarriage());
-        if (StringUtils.hasText(primary.getEducation())) {
-            try {
-                int education = Integer.parseInt(primary.getEducation());
-                if (education <= 255 && education >= 0) {
-                    userExtendDO.setEducation(education);
-                }
-            } catch (Exception e) {
-            }
-        }
         userExtendDO.setAssetSituation(primary.getIshave());
         userExtendDO.setEmergencyName(primary.getEmergencyName());
         userExtendDO.setEmergencyMobile(primary.getEmergencyMobile());

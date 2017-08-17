@@ -63,7 +63,7 @@
 	</Appenders>
 
 	<Loggers>
-		<Logger name="jdbc.support" level="debug" additivity="false">
+		<Logger name="jdbc.support" level="debug" additivity="true">
 			<AppenderRef ref="debug_log"/>
 			<AppenderRef ref="info_log"/>
 			<AppenderRef ref="warn_log"/>
