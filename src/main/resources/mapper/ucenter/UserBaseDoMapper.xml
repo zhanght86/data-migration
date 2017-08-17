@@ -78,4 +78,12 @@
         where u.uid &lt; #{maxUid}
         </if>
     </select>
+
+    <select id="selectBetween" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List"/>
+        from u_base u
+        where
+            mobile &gt;= #{startMobile} and mobile &lt;= #{endMobile}
+    </select>
 </mapper>

@@ -12,5 +12,5 @@ public interface MigrationService<T> {
     /**
      * 迁移数据
      */
-    void migrate(List<? extends T> itemList);
+    void migrate(List<? extends T> itemList, String type);
 }

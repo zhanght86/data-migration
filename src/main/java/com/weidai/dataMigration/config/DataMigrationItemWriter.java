@@ -30,7 +30,7 @@ public class DataMigrationItemWriter<T> implements ItemWriter<T>, InitializingBe
     @Override
     public void write(List<? extends T> items) throws Exception {
         if (!items.isEmpty()) {
-            migrationService.migrate(items);
+            migrationService.migrate(items, "default");
         }
     }
 

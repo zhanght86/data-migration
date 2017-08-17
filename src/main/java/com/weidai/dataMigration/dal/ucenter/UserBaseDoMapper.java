@@ -3,9 +3,16 @@
  */
 package com.weidai.dataMigration.dal.ucenter;
 
+import com.weidai.dataMigration.domain.UserBaseDo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
 /**
  * @author wuqi 2017/8/4 0004.
  */
 public interface UserBaseDoMapper {
     int count(Integer maxUid);
+
+    List<UserBaseDo> selectBetween(@Param("startMobile") String startMobile, @Param("endMobile") String endMobile);
 }

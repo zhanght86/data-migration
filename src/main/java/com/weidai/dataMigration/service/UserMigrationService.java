@@ -25,6 +25,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
+import static com.weidai.dataMigration.util.UserMigrationHolder.*;
+
 /**
  * @author wuqi 2017/8/4 0004.
  */
@@ -73,11 +75,13 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     public static ExecutorService executorService;
 
     @Override
-    public void migrate(List<? extends List<UserBaseDo>> itemList) {
+    public void migrate(List<? extends List<UserBaseDo>> itemList, String type) {
         List<UserBaseDo> targetList = itemList.get(0);
-        targetList = mergeList(targetList);
-        if (!UserMigrationHolder.isLastPage()) {
-            trimList(targetList);
+        if (DEFAULT_TYPE.equals(type)) {
+            targetList = mergeList(targetList);
+            if (!UserMigrationHolder.isLastPage()) {
+                trimList(targetList);
+            }
         }
         logger.info("migrate current batch data, size: {}", targetList.size());
         String[] markArr = { targetList.get(0).getMobile(), targetList.get(targetList.size() - 1).getMobile() };
@@ -110,11 +114,11 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         if (!borrowerIds.isEmpty()) {
             start = System.currentTimeMillis();
             List<UserBaseExtendDo> userBaseExtendList = userBaseExtendDoMapper.selectUserBaseExtendIn(borrowerIds);
-            logger.info("query u_base_extend costs: {}ms, uid size: {}", System.currentTimeMillis() - start, borrowerIds.size());
+            logger.info("query u_base_extend costs: {}ms, borrowerUids size: {}", System.currentTimeMillis() - start, borrowerIds.size());
 
             start = System.currentTimeMillis();
             List<BorrowerDo> borrowerList = borrowerDoMapper.selectBorrowerIn(borrowerIds);
-            logger.info("query u_borrower costs: {}ms, uid size: {}", System.currentTimeMillis() - start, borrowerIds.size());
+            logger.info("query u_borrower costs: {}ms, borrowerUids size: {}", System.currentTimeMillis() - start, borrowerIds.size());
             if ((userBaseExtendList != null && userBaseExtendList.size() > 0) || (borrowerList != null && borrowerList.size() > 0)) {
                 Map<Integer, UserBaseExtendDo> userBaseExtendMap = transferUserBaseExtendListToMap(userBaseExtendList);
                 Map<Integer, BorrowerDo> borrowerMap = transferBorrowerListToMap(borrowerList);
@@ -133,7 +137,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         if (!tenderIds.isEmpty()) {
             start = System.currentTimeMillis();
             List<TenderDo> tenderList = tenderDoMapper.selectTenderIn(tenderIds);
-            logger.info("query u_tender costs: {}ms, uid size: {}", System.currentTimeMillis() - start, tenderIds.size());
+            logger.info("query u_tender costs: {}ms, tenderUids size: {}", System.currentTimeMillis() - start, tenderIds.size());
             if (tenderList != null && tenderList.size() > 0) {
                 Map<Integer, TenderDo> tenderMap = transferTenderListToMap(tenderList);
                 for (UserInfoWrapper wrapper : userMap.values()) {
@@ -178,7 +182,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             }
         }
         logger.info("prepare data costs: {}ms", System.currentTimeMillis() - preStart);
-        doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList, markArr);
+        doMigrate(userDOList, userExtendDOList, userSubAccountDOList, loginStatusDOList, registerInfoDOList, tenderInfoDOList, borrowerInfoDOList, markArr, type);
     }
 
     private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
@@ -203,8 +207,8 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
 
     private void doMigrate(final List<UserDO> userDOList, final List<UserExtendDO> userExtendDOList, final List<UserSubAccountDO> userSubAccountDOList,
             final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
-            final List<BorrowerInfoDO> borrowerInfoDOList, final String[] markArr) {
-        if (!userDOList.isEmpty()) {
+            final List<BorrowerInfoDO> borrowerInfoDOList, final String[] markArr, String type) {
+        if (!userDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_TYPE.equals(type))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -213,13 +217,13 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userDOMapper.insertBatchWithId(userDOList);
                         logger.info("batch insert u_user costs: {}ms, size: {}", System.currentTimeMillis() - start, userDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_TYPE, markArr[0], markArr[1]);
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
-        if (!userExtendDOList.isEmpty()) {
+        if (!userExtendDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_EXTEND_TYPE.equals(type))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -228,13 +232,13 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
                         logger.info("batch insert u_user_extend costs: {}ms, size: {}", System.currentTimeMillis() - start, userExtendDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_EXTEND_TYPE, markArr[0], markArr[1]);
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
-        if (!userSubAccountDOList.isEmpty()) {
+        if (!userSubAccountDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_SUB_ACCOUNT_TYPE.equals(type))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -243,73 +247,93 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
                         logger.info("batch insert u_sub_account costs: {}ms, size: {}", System.currentTimeMillis() - start, userSubAccountDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, start mobile: {}, end mobile: {}", markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_SUB_ACCOUNT_TYPE, markArr[0], markArr[1]);
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
         final CountDownLatch latch = new CountDownLatch(4);
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!loginStatusDOList.isEmpty()) {
+        if (!loginStatusDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || LOGIN_STATUS_TYPE.equals(type))) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         long start = System.currentTimeMillis();
                         loginStatusDOMapper.insertBatch(loginStatusDOList);
                         logger.info("batch insert u_login_status costs: {}ms, size: {}", System.currentTimeMillis() - start, loginStatusDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", LOGIN_STATUS_TYPE, markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    } finally {
+                        latch.countDown();
                     }
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!registerInfoDOList.isEmpty()) {
+            });
+        } else {
+            latch.countDown();
+        }
+        if (!registerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || REGISTER_INFO_TYPE.equals(type))) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         long start = System.currentTimeMillis();
                         registerInfoDOMapper.insertBatch(registerInfoDOList);
                         logger.info("batch insert u_register_info costs: {}ms, size: {}", System.currentTimeMillis() - start, registerInfoDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", REGISTER_INFO_TYPE, markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    } finally {
+                        latch.countDown();
                     }
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!tenderInfoDOList.isEmpty()) {
+            });
+        } else {
+            latch.countDown();
+        }
+        if (!tenderInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || TENDER_INFO_TYPE.equals(type))) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         long start = System.currentTimeMillis();
                         tenderInfoDOMapper.insertBatch(tenderInfoDOList);
                         logger.info("batch insert u_tender_info costs: {}ms, size: {}", System.currentTimeMillis() - start, tenderInfoDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", TENDER_INFO_TYPE, markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    } finally {
+                        latch.countDown();
                     }
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!borrowerInfoDOList.isEmpty()) {
+            });
+        } else {
+            latch.countDown();
+        }
+        if (!borrowerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || BORROWER_INFO_TYPE.equals(type))) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         long start = System.currentTimeMillis();
                         borrowerInfoDOMapper.insertBatch(borrowerInfoDOList);
                         logger.info("batch insert u_borrower_info costs: {}ms, size: {}", System.currentTimeMillis() - start, borrowerInfoDOList.size());
+                    } catch (Throwable t) {
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", BORROWER_INFO_TYPE, markArr[0], markArr[1]);
+                        logger.error(t.getMessage(), t);
+                    } finally {
+                        latch.countDown();
                     }
-                } finally {
-                    latch.countDown();
                 }
-            }
-        });
+            });
+        } else {
+            latch.countDown();
+        }
         try {
             latch.await();
         } catch (InterruptedException e) {
-            logger.error("migration thread was interrupted!", e);
+            logger.error("migration task was interrupted!", e);
         }
     }
 

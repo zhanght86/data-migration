@@ -16,6 +16,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UserMigrationHolder {
 
+    public static final String DEFAULT_TYPE = "default";
+
+    public static final String USER_TYPE = "user";
+
+    public static final String USER_SUB_ACCOUNT_TYPE = "userSubAccount";
+
+    public static final String USER_EXTEND_TYPE = "userExtend";
+
+    public static final String TENDER_INFO_TYPE = "tenderInfo";
+
+    public static final String BORROWER_INFO_TYPE = "borrowerInfo";
+
+    public static final String REGISTER_INFO_TYPE = "registerInfo";
+
+    public static final String LOGIN_STATUS_TYPE = "loginStatus";
+
     public static volatile Integer PAGE_SIZE;
 
     public static volatile Integer MAX_UID;

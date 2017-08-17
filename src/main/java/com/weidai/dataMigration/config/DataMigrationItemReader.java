@@ -3,7 +3,6 @@
  */
 package com.weidai.dataMigration.config;
 
-import com.weidai.dataMigration.util.UserMigrationHolder;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -17,6 +16,8 @@ import org.springframework.util.ClassUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.weidai.dataMigration.util.UserMigrationHolder.*;
 
 /**
  * @author wuqi 2017/8/14 0014.
@@ -46,19 +47,19 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
     @Override
     protected T doRead() throws Exception {
         synchronized (lock) {
-            if (page < UserMigrationHolder.TOTAL_PAGE) {
+            if (page < TOTAL_PAGE) {
                 Map<String, Object> parameters = new HashMap<>();
                 if (parameterValues != null) {
                     parameters.putAll(parameterValues);
                 }
                 parameters.put("_page", page);
-                parameters.put("_pagesize", UserMigrationHolder.PAGE_SIZE);
-                parameters.put("_skiprows", page * UserMigrationHolder.PAGE_SIZE);
-                parameters.put("maxUid", UserMigrationHolder.MAX_UID);
+                parameters.put("_pagesize", PAGE_SIZE);
+                parameters.put("_skiprows", page * PAGE_SIZE);
+                parameters.put("maxUid", MAX_UID);
                 long cur = System.currentTimeMillis();
                 List<?> results = sqlSessionTemplate.selectList(queryId, parameters);
                 logger.info("query No.{} page costs: {}ms, result size: {}", page + 1, System.currentTimeMillis() - cur, results.size());
-                UserMigrationHolder.CURRENT_PAGE = page++;
+                CURRENT_PAGE = page++;
                 return (T) results;
             }
             return null;
