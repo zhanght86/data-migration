@@ -45,6 +45,7 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected T doRead() throws Exception {
         synchronized (lock) {
             if (page < TOTAL_PAGE) {
