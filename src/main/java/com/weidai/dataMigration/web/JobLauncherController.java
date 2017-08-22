@@ -3,6 +3,7 @@
  */
 package com.weidai.dataMigration.web;
 
+import com.weidai.dataMigration.config.FixedThreadPoolFactory;
 import com.weidai.dataMigration.config.UserBaseItemProcessor;
 import com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper;
 import com.weidai.dataMigration.domain.UserBaseDo;
@@ -63,6 +64,9 @@ public class JobLauncherController {
     @GetMapping("/{startMobile}/{endMobile}")
     public String fixError(@PathVariable("startMobile") String startMobile, @PathVariable("endMobile") String endMobile, @RequestParam("maxUid") Integer maxUid,
             @RequestParam("type") String type, @RequestParam(name = "startUserId", required = false) Integer startUserId) throws InterruptedException {
+        if (UserMigrationService.executorService.isShutdown()) {
+            UserMigrationService.executorService = FixedThreadPoolFactory.getInstance().getThreadPool(1, 7, "batch-insert-thread");
+        }
         List<UserBaseDo> list = userBaseDoMapper.selectBetween(startMobile, endMobile, maxUid);
         logger.info("find {} items between {} and {}", list == null ? 0 : list.size(), startMobile, endMobile);
         if (list != null && !list.isEmpty()) {
@@ -84,7 +88,8 @@ public class JobLauncherController {
                 }
                 userMigrationService.migrate(wrapperList, type);
                 // 等待所有已提交的任务完成
-                while(!UserMigrationService.executorService.awaitTermination(60, TimeUnit.SECONDS));
+                UserMigrationService.executorService.shutdown();
+                while(!UserMigrationService.executorService.awaitTermination(2, TimeUnit.SECONDS));
                 logger.info("All task has completed, invalid count: {}", invalidCount);
             }
         }
