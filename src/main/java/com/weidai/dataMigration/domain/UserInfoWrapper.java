@@ -105,6 +105,15 @@ public class UserInfoWrapper {
         Collections.sort(registerInfoList, new Comparator<RegisterInfoDO>() {
             @Override
             public int compare(RegisterInfoDO o1, RegisterInfoDO o2) {
+                if (o1.getRegTime() == null && null == o2.getRegTime()) {
+                    return 0;
+                }
+                if (o1.getRegTime() == null && o2.getRegTime() != null) {
+                    return 1;
+                }
+                if (o1.getRegTime() != null && o2.getRegTime() == null) {
+                    return -1;
+                }
                 if (o1.getRegTime().before(o2.getRegTime())) {
                     return -1;
                 }
@@ -241,7 +250,9 @@ public class UserInfoWrapper {
             }
         }
         userExtendDO.setEducation(primary.getEducation());
-        userExtendDO.setMarriage(primary.getMarriage());
+        if (primary.getMarriage() != null && primary.getMarriage() <= 255 && primary.getMarriage() >= 0) {
+            userExtendDO.setMarriage(primary.getMarriage());
+        }
         userExtendDO.setAssetSituation(primary.getIshave());
         userExtendDO.setEmergencyName(primary.getEmergencyName());
         userExtendDO.setEmergencyMobile(primary.getEmergencyMobile());
@@ -306,7 +317,10 @@ public class UserInfoWrapper {
      */
     private void transferUserDO(UserBaseDo primary) {
         userDO = new UserDO();
-        BeanUtils.copyProperties(primary, userDO);
+        BeanUtils.copyProperties(primary, userDO, "age");
+        if (primary.getAge() != null && primary.getAge() <= 255 && primary.getAge() >= 0) {
+            userDO.setAge(primary.getAge());
+        }
         userDO.setLoginName(loginName);
         if (userDO.getCertNo() == null && userDO.getIdNumber() != null) {
             userDO.setCertNo(ThreeDESUtil.encodeBASE64(userDO.getIdNumber()));

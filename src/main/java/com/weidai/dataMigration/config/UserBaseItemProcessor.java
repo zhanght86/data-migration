@@ -33,14 +33,14 @@ public class UserBaseItemProcessor implements ItemProcessor<List<UserBaseDo>, Li
         return results.isEmpty() ? null : results;
     }
 
-    private boolean isValid(UserBaseDo userBaseDo) {
+    public static boolean isValid(UserBaseDo userBaseDo) {
         if (userBaseDo.getStatus() != null) {
             return userBaseDo.getStatus().equals(0) || userBaseDo.getStatus().equals(2);
         }
         return false;
     }
 
-    private boolean isNotEmployee(UserBaseDo userBaseDo) {
+    public static boolean isNotEmployee(UserBaseDo userBaseDo) {
         return userBaseDo.getUserType() != null && (userBaseDo.getUserType().equals(1) || userBaseDo.getUserType().equals(2)
                 || userBaseDo.getUserType().equals(4) || userBaseDo.getUserType().equals(7) || userBaseDo.getUserType().equals(9));
     }

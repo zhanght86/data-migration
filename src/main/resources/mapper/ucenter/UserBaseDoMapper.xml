@@ -71,9 +71,9 @@
         </if>
     </select>
 
-    <select id="count" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+    <select id="count" resultType="java.lang.Integer">
         select count(*)
-        from u_base
+        from u_base u
         <if test="maxUid != null">
         where u.uid &lt; #{maxUid}
         </if>
@@ -84,6 +84,6 @@
             <include refid="Base_Column_List"/>
         from u_base u
         where
-            mobile &gt;= #{startMobile} and mobile &lt;= #{endMobile}
+            u.mobile &gt;= #{startMobile} and u.mobile &lt;= #{endMobile} and u.uid &lt; #{maxUid}
     </select>
 </mapper>

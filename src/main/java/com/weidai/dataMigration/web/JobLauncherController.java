@@ -3,6 +3,7 @@
  */
 package com.weidai.dataMigration.web;
 
+import com.weidai.dataMigration.config.UserBaseItemProcessor;
 import com.weidai.dataMigration.dal.ucenter.UserBaseDoMapper;
 import com.weidai.dataMigration.domain.UserBaseDo;
 import com.weidai.dataMigration.service.UserMigrationService;
@@ -13,6 +14,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,14 +43,14 @@ public class JobLauncherController {
     @Autowired
     UserMigrationService userMigrationService;
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "pong!!!";
+    @GetMapping("/ping/{aa}")
+    public String ping(@PathVariable("aa") String aa, @RequestParam(name = "bb", required = false) String bb) {
+        return "pong!!!<br>" + aa + bb;
     }
 
     @GetMapping("/run")
     public void runJob(@RequestParam(name = "pageSize", required = false, defaultValue = "5000") Integer pageSize,
-            @RequestParam(name = "maxUid") Integer maxUid) throws Exception {
+            @RequestParam("maxUid") Integer maxUid) throws Exception {
         UserMigrationHolder.PAGE_SIZE = pageSize;
         UserMigrationHolder.MAX_UID = maxUid;
         int count = userBaseDoMapper.count(maxUid);
@@ -58,18 +60,33 @@ public class JobLauncherController {
         jobLauncher.run(job, new JobParameters());
     }
 
-    @GetMapping("/{type}/{startMobile}/{endMobile}")
-    public String fixError(@PathVariable("type") String type, @PathVariable("startMobile") String startMobile, @PathVariable("endMobile") String endMobile)
-            throws InterruptedException {
-        List<UserBaseDo> list = userBaseDoMapper.selectBetween(startMobile, endMobile);
+    @GetMapping("/{startMobile}/{endMobile}")
+    public String fixError(@PathVariable("startMobile") String startMobile, @PathVariable("endMobile") String endMobile, @RequestParam("maxUid") Integer maxUid,
+            @RequestParam("type") String type, @RequestParam(name = "startUserId", required = false) Integer startUserId) throws InterruptedException {
+        List<UserBaseDo> list = userBaseDoMapper.selectBetween(startMobile, endMobile, maxUid);
         logger.info("find {} items between {} and {}", list == null ? 0 : list.size(), startMobile, endMobile);
         if (list != null && !list.isEmpty()) {
-            List<List<UserBaseDo>> wrapperList = new ArrayList<>(1);
-            wrapperList.add(list);
-            userMigrationService.migrate(wrapperList, type);
-            userMigrationService.executorService.shutdown();
-            final boolean done = userMigrationService.executorService.awaitTermination(60, TimeUnit.SECONDS);
-            logger.info("All task has completed so far? {}", done);
+            List<UserBaseDo> results = new ArrayList<>(list.size());
+            int invalidCount = 0;
+            for (UserBaseDo userBaseDo : list) {
+                if (StringUtils.hasText(userBaseDo.getMobile()) && UserBaseItemProcessor.isValid(userBaseDo)
+                        && UserBaseItemProcessor.isNotEmployee(userBaseDo)) {
+                    results.add(userBaseDo);
+                } else {
+                    invalidCount++;
+                }
+            }
+            if (!results.isEmpty()) {
+                List<List<UserBaseDo>> wrapperList = new ArrayList<>(1);
+                wrapperList.add(results);
+                if (startUserId != null) {
+                    UserMigrationHolder.initId(startUserId);
+                }
+                userMigrationService.migrate(wrapperList, type);
+                // 等待所有已提交的任务完成
+                while(!UserMigrationService.executorService.awaitTermination(60, TimeUnit.SECONDS));
+                logger.info("All task has completed, invalid count: {}", invalidCount);
+            }
         }
         return "Complete!";
     }
