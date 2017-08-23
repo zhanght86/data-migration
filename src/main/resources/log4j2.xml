@@ -41,9 +41,9 @@
 		<Logger name="jdbc.support" level="debug" additivity="false">
 			<AppenderRef ref="debug_log"/>
 		</Logger>
-		<Logger name="com.weidai.dataMigration.dal.ucore" level="debug" additivity="false">
-			<AppenderRef ref="debug_log"/>
-		</Logger>
+		<!--<Logger name="com.weidai.dataMigration.dal.ucore" level="debug" additivity="false">-->
+			<!--<AppenderRef ref="debug_log"/>-->
+		<!--</Logger>-->
 		<Root level="info">
 			<AppenderRef ref="console"/>
 			<AppenderRef ref="debug_log"/>
