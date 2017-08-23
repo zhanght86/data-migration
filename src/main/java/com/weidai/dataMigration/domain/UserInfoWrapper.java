@@ -364,7 +364,7 @@ public class UserInfoWrapper {
         for (UserBaseDo userBaseDo : userBaseList) {
             int rank = 0;
             if (userBaseDo.getRealStatus() != null && userBaseDo.getRealStatus().equals(0)) {
-                rank++;
+                rank += 2;
             }
             if (UserTypeEnum.U_BORROWER.getCode().equals(userBaseDo.getUserType())) {
                 rank++;
