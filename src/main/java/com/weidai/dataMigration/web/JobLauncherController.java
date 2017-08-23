@@ -54,7 +54,7 @@ public class JobLauncherController {
             @RequestParam("maxUid") Integer maxUid) throws Exception {
         UserMigrationHolder.PAGE_SIZE = pageSize;
         UserMigrationHolder.MAX_UID = maxUid;
-        int count = userBaseDoMapper.count(maxUid);
+        int count = userBaseDoMapper.count();
         UserMigrationHolder.TOTAL_PAGE = (count % pageSize == 0 ? count / pageSize : count / pageSize + 1);
         logger.info("total elements count: {}, total page : {}", count, UserMigrationHolder.TOTAL_PAGE);
         logger.info("dataMigrationJob is starting...");
