@@ -361,6 +361,7 @@ public class UserInfoWrapper {
         if (userBaseList.size() == 1) {
             return userBaseList.get(0);
         }
+        String tenderLoginName = null;
         for (UserBaseDo userBaseDo : userBaseList) {
             int rank = 0;
             if (userBaseDo.getRealStatus() != null && userBaseDo.getRealStatus().equals(0)) {
@@ -369,10 +370,17 @@ public class UserInfoWrapper {
             if (UserTypeEnum.U_BORROWER.getCode().equals(userBaseDo.getUserType())) {
                 rank++;
             }
+            if (UserTypeEnum.U_TENDER.getCode().equals(userBaseDo.getUserType())) {
+                tenderLoginName = userBaseDo.getLoginName();
+            }
             userBaseDo.setRank(rank);
         }
         Collections.sort(userBaseList);
-        return userBaseList.get(userBaseList.size() - 1);
+        UserBaseDo primary = userBaseList.get(userBaseList.size() - 1);
+        if (!StringUtils.isEmpty(tenderLoginName)) {
+            primary.setLoginName(tenderLoginName);
+        }
+        return primary;
     }
 
     public List<UserBaseDo> getUserBaseList() {
