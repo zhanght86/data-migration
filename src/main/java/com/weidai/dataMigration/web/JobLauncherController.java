@@ -44,9 +44,9 @@ public class JobLauncherController {
     @Autowired
     UserMigrationService userMigrationService;
 
-    @GetMapping("/ping/{aa}")
-    public String ping(@PathVariable("aa") String aa, @RequestParam(name = "bb", required = false) String bb) {
-        return "pong!!!<br>" + aa + bb;
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong!!!";
     }
 
     @GetMapping("/run")
