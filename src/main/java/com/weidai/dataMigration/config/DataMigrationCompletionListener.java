@@ -24,10 +24,10 @@ public class DataMigrationCompletionListener extends JobExecutionListenerSupport
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
             try {
-                // 等待所有已提交的任务完成，最多等待1min
+                // 等待所有已提交的任务完成
                 UserMigrationService.executorService.shutdown();
-                final boolean done = UserMigrationService.executorService.awaitTermination(60, TimeUnit.SECONDS);
-                logger.info("All task has completed so far? {}", done);
+                while(!UserMigrationService.executorService.awaitTermination(2, TimeUnit.SECONDS));
+                logger.info("All task has completed!");
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }

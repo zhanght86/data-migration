@@ -45,9 +45,10 @@ public class DataMigrationItemReader<T> extends AbstractItemCountingItemStreamIt
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected T doRead() throws Exception {
         synchronized (lock) {
-            if (page < TOTAL_PAGE) {
+            if (page <= TOTAL_PAGE) { // 多读一页，防止迁移过程中有插入大量数据
                 Map<String, Object> parameters = new HashMap<>();
                 if (parameterValues != null) {
                     parameters.putAll(parameterValues);

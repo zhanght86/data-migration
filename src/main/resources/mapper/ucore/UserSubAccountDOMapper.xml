@@ -13,6 +13,8 @@
         <result column="uid_cus" property="uidCus"/>
         <result column="uid_sale" property="uidSale"/>
         <result column="wyr_cid" property="wyrCid"/>
+        <result column="pay_password" property="payPassword"/>
+        <result column="is_safe_pay_password" property="safePayPassword"/>
         <result column="gmt_create" property="createTime"/>
         <result column="gmt_modified" property="modifiedTime"/>
     </resultMap>

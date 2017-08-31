@@ -12,7 +12,7 @@ import java.util.List;
  * @author wuqi 2017/8/4 0004.
  */
 public interface UserBaseDoMapper {
-    int count(Integer maxUid);
+    int count();
 
-    List<UserBaseDo> selectBetween(@Param("startMobile") String startMobile, @Param("endMobile") String endMobile);
+    List<UserBaseDo> selectBetween(@Param("startMobile") String startMobile, @Param("endMobile") String endMobile, @Param("maxUid") Integer maxUid);
 }

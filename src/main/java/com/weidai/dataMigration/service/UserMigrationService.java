@@ -13,12 +13,10 @@ import com.weidai.dataMigration.domain.*;
 import com.weidai.dataMigration.util.UserMigrationHolder;
 import com.weidai.ucore.facade.constant.UserTypeEnum;
 import com.weidai.ucore.facade.domain.*;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -68,17 +66,15 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     @Autowired
     private BorrowerInfoDOMapper borrowerInfoDOMapper;
     
-    @Autowired
-    @Qualifier("ucoreSST")
-    private SqlSessionTemplate sqlSessionTemplate;
-    
     public static ExecutorService executorService;
 
     @Override
     public void migrate(List<? extends List<UserBaseDo>> itemList, String type) {
         List<UserBaseDo> targetList = itemList.get(0);
         if (DEFAULT_TYPE.equals(type)) {
-            targetList = mergeList(targetList);
+            if (!TAIL_ITEMS.isEmpty()) {
+                targetList = mergeList(targetList);
+            }
             if (!UserMigrationHolder.isLastPage()) {
                 trimList(targetList);
             }
@@ -187,28 +183,28 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
 
     private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
         List<UserBaseDo> mergedList = new ArrayList<>(list.size());
-        mergedList.addAll(UserMigrationHolder.TAIL_ITEMS);
+        mergedList.addAll(TAIL_ITEMS);
         mergedList.addAll(list);
-        UserMigrationHolder.TAIL_ITEMS.clear();
+        TAIL_ITEMS.clear();
         return mergedList;
     }
 
     private void trimList(List<UserBaseDo> list) {
         UserBaseDo lastItem = list.remove(list.size() - 1);
-        UserMigrationHolder.TAIL_ITEMS.add(lastItem);
+        TAIL_ITEMS.add(lastItem);
         String cur = lastItem.getMobile();
         for (int i = list.size() - 1; i >= 0; i--) {
             if (!cur.equals(list.get(i).getMobile())) {
                 break;
             }
-            UserMigrationHolder.TAIL_ITEMS.add(list.remove(i));
+            TAIL_ITEMS.add(list.remove(i));
         }
     }
 
     private void doMigrate(final List<UserDO> userDOList, final List<UserExtendDO> userExtendDOList, final List<UserSubAccountDO> userSubAccountDOList,
             final List<LoginStatusDO> loginStatusDOList, final List<RegisterInfoDO> registerInfoDOList, final List<TenderInfoDO> tenderInfoDOList,
             final List<BorrowerInfoDO> borrowerInfoDOList, final String[] markArr, String type) {
-        if (!userDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_TYPE.equals(type))) {
+        if (!userDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, USER_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -217,13 +213,14 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userDOMapper.insertBatchWithId(userDOList);
                         logger.info("batch insert u_user costs: {}ms, size: {}", System.currentTimeMillis() - start, userDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_TYPE, markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}, start userId: {}, end userId: {}", USER_TYPE,
+                                markArr[0], markArr[1], userDOList.get(0).getId(), userDOList.get(userDOList.size() - 1).getId());
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
-        if (!userExtendDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_EXTEND_TYPE.equals(type))) {
+        if (!userExtendDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, USER_EXTEND_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -232,13 +229,15 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userExtendDOMapper.insertBatchWithUserId(userExtendDOList);
                         logger.info("batch insert u_user_extend costs: {}ms, size: {}", System.currentTimeMillis() - start, userExtendDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_EXTEND_TYPE, markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}, start userId: {}, end userId: {}",
+                                USER_EXTEND_TYPE, markArr[0], markArr[1], userExtendDOList.get(0).getUserId(),
+                                userExtendDOList.get(userExtendDOList.size() - 1).getUserId());
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
-        if (!userSubAccountDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || USER_SUB_ACCOUNT_TYPE.equals(type))) {
+        if (!userSubAccountDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, USER_SUB_ACCOUNT_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -247,14 +246,16 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         userSubAccountDOMapper.insertBatchWithUid(userSubAccountDOList);
                         logger.info("batch insert u_sub_account costs: {}ms, size: {}", System.currentTimeMillis() - start, userSubAccountDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", USER_SUB_ACCOUNT_TYPE, markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}, start userId: {}, end userId: {}",
+                                USER_SUB_ACCOUNT_TYPE, markArr[0], markArr[1], userSubAccountDOList.get(0).getUserId(),
+                                userSubAccountDOList.get(userSubAccountDOList.size() - 1).getUserId());
                         logger.error(t.getMessage(), t);
                     }
                 }
             });
         }
         final CountDownLatch latch = new CountDownLatch(4);
-        if (!loginStatusDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || LOGIN_STATUS_TYPE.equals(type))) {
+        if (!loginStatusDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, LOGIN_STATUS_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -263,7 +264,9 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
                         loginStatusDOMapper.insertBatch(loginStatusDOList);
                         logger.info("batch insert u_login_status costs: {}ms, size: {}", System.currentTimeMillis() - start, loginStatusDOList.size());
                     } catch (Throwable t) {
-                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}", LOGIN_STATUS_TYPE, markArr[0], markArr[1]);
+                        logger.error("execute current batch error, type: {}, start mobile: {}, end mobile: {}, start userId: {}, end userId: {}",
+                                LOGIN_STATUS_TYPE, markArr[0], markArr[1], loginStatusDOList.get(0).getUserId(),
+                                loginStatusDOList.get(loginStatusDOList.size() - 1).getUserId());
                         logger.error(t.getMessage(), t);
                     } finally {
                         latch.countDown();
@@ -273,7 +276,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         } else {
             latch.countDown();
         }
-        if (!registerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || REGISTER_INFO_TYPE.equals(type))) {
+        if (!registerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, REGISTER_INFO_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -292,7 +295,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         } else {
             latch.countDown();
         }
-        if (!tenderInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || TENDER_INFO_TYPE.equals(type))) {
+        if (!tenderInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, TENDER_INFO_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -311,7 +314,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         } else {
             latch.countDown();
         }
-        if (!borrowerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || BORROWER_INFO_TYPE.equals(type))) {
+        if (!borrowerInfoDOList.isEmpty() && (DEFAULT_TYPE.equals(type) || containsType(type, BORROWER_INFO_TYPE))) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -372,6 +375,10 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         return map;
     }
 
+    private boolean containsType(String type, String val) {
+        return Arrays.asList(type.split(",")).contains(val);
+    }
+    
     @Override
     public void afterPropertiesSet() throws Exception {
         executorService = FixedThreadPoolFactory.getInstance().getThreadPool(7, 15, "batch-insert-thread");

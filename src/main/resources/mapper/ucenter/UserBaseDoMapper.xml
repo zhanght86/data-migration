@@ -65,18 +65,11 @@
             <include refid="Base_Column_List"/>
         from u_base u,
             (select uid from u_base order by mobile limit #{_skiprows}, #{_pagesize}) uu
-        where u.uid = uu.uid
-        <if test="maxUid != null">
-            and u.uid &lt; #{maxUid}
-        </if>
+        where u.uid = uu.uid and u.uid &lt; #{maxUid}
     </select>
 
-    <select id="count" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select count(*)
-        from u_base
-        <if test="maxUid != null">
-        where u.uid &lt; #{maxUid}
-        </if>
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from u_base
     </select>
 
     <select id="selectBetween" resultMap="BaseResultMap">
@@ -84,6 +77,6 @@
             <include refid="Base_Column_List"/>
         from u_base u
         where
-            mobile &gt;= #{startMobile} and mobile &lt;= #{endMobile}
+            u.mobile &gt;= #{startMobile} and u.mobile &lt;= #{endMobile} and u.uid &lt; #{maxUid}
     </select>
 </mapper>

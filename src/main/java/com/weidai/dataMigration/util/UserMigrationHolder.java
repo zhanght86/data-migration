@@ -52,6 +52,10 @@ public class UserMigrationHolder {
         return ID_GENERATOR.getAndIncrement();
     }
 
+    public static void initId(int id){
+        ID_GENERATOR.set(id);
+    }
+
     public static void bindChannelMap(Map<String, Integer> targetMap) {
         CHANNEL_MAP.putAll(targetMap);
     }

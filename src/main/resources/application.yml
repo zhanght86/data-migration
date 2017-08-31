@@ -18,8 +18,8 @@ spring:
         username: uatwdw
         password: UATwdw123!
       ucore:
-        url: jdbc:mysql://192.168.20.40:3306/ucenter1?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
-        username: devucenter1
-        password: DEVucenter1123!
+        url: jdbc:mysql://172.20.100.11:3306/ucenter?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+        username: uatucenter
+        password: UATucenter123!
 server:
   port: 8082
