@@ -82,7 +82,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
         logger.info("migrate current batch data, size: {}", targetList.size());
         String[] markArr = { targetList.get(0).getMobile(), targetList.get(targetList.size() - 1).getMobile() };
         long preStart = System.currentTimeMillis();
-        Map<String, UserInfoWrapper> userMap = new HashMap<>(targetList.size());
+        Map<String, UserInfoWrapper> userMap = new TreeMap<>();
         Set<Integer> uids = new HashSet<>(targetList.size());
         Set<Integer> borrowerIds = new HashSet<>();
         Set<Integer> tenderIds = new HashSet<>();
@@ -99,7 +99,6 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             } else if (UserTypeEnum.U_TENDER.getCode().equals(userBaseDo.getUserType())) {
                 userMap.get(userBaseDo.getMobile()).setTenderUid(userBaseDo.getUid());
                 userMap.get(userBaseDo.getMobile()).setTenderUserBaseDo(userBaseDo);
-                userMap.get(userBaseDo.getMobile()).setLoginName(userBaseDo.getLoginName());
                 tenderIds.add(userBaseDo.getUid());
             }
         }
