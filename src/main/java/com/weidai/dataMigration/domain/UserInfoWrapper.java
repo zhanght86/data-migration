@@ -35,8 +35,6 @@ public class UserInfoWrapper {
 
     private UserBaseDo tenderUserBaseDo;
 
-    private String loginName;
-
     private Map<Integer, List<RoleInfoDTO>> roleInfoMap = new HashMap<>();
 
     private UserDO userDO;
@@ -321,7 +319,6 @@ public class UserInfoWrapper {
         if (primary.getAge() != null && primary.getAge() <= 255 && primary.getAge() >= 0) {
             userDO.setAge(primary.getAge());
         }
-        userDO.setLoginName(loginName);
         if (userDO.getCertNo() == null && userDO.getIdNumber() != null) {
             userDO.setCertNo(ThreeDESUtil.encodeBASE64(userDO.getIdNumber()));
         }
@@ -445,14 +442,6 @@ public class UserInfoWrapper {
 
     public void setTenderUserBaseDo(UserBaseDo tenderUserBaseDo) {
         this.tenderUserBaseDo = tenderUserBaseDo;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
     }
 
     public Map<Integer, List<RoleInfoDTO>> getRoleInfoMap() {
