@@ -181,6 +181,17 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     }
 
     private List<UserBaseDo> mergeList(List<UserBaseDo> list) {
+        Integer lastItemUid = TAIL_ITEMS.get(TAIL_ITEMS.size() -1).getUid();
+        int duplicatePos = list.size();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (lastItemUid.equals(list.get(i).getUid())) {
+                duplicatePos = i;
+                break;
+            }
+        }
+        while (duplicatePos < list.size()) {
+            list.remove(duplicatePos++);
+        }
         List<UserBaseDo> mergedList = new ArrayList<>(list.size());
         mergedList.addAll(TAIL_ITEMS);
         mergedList.addAll(list);
@@ -196,7 +207,7 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
             if (!cur.equals(list.get(i).getMobile())) {
                 break;
             }
-            TAIL_ITEMS.add(list.remove(i));
+            TAIL_ITEMS.add(0, list.remove(i));
         }
     }
 
