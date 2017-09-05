@@ -62,8 +62,9 @@ public class JobLauncherController {
     }
 
     @GetMapping("/{startMobile}/{endMobile}")
-    public String fixError(@PathVariable("startMobile") String startMobile, @PathVariable("endMobile") String endMobile, @RequestParam("maxUid") Integer maxUid,
-            @RequestParam("type") String type, @RequestParam(name = "startUserId", required = false) Integer startUserId) throws InterruptedException {
+    public String fixError(@PathVariable("startMobile") String startMobile, @PathVariable("endMobile") String endMobile,
+            @RequestParam(value = "maxUid", required = false) Integer maxUid, @RequestParam("type") String type,
+            @RequestParam(name = "startUserId", required = false) Integer startUserId) throws InterruptedException {
         if (UserMigrationService.executorService.isShutdown()) {
             UserMigrationService.executorService = FixedThreadPoolFactory.getInstance().getThreadPool(1, 7, "batch-insert-thread");
         }
@@ -89,10 +90,19 @@ public class JobLauncherController {
                 userMigrationService.migrate(wrapperList, type);
                 // 等待所有已提交的任务完成
                 UserMigrationService.executorService.shutdown();
-                while(!UserMigrationService.executorService.awaitTermination(2, TimeUnit.SECONDS));
+                while (!UserMigrationService.executorService.awaitTermination(2, TimeUnit.SECONDS))
+                    ;
                 logger.info("All task has completed, invalid count: {}", invalidCount);
             }
         }
         return "Complete!";
+    }
+
+    @GetMapping("/reroll")
+    public String reroll(@RequestParam("mobile") String mobile, @RequestParam(value = "startUserId", required = false) Integer startUserId)
+            throws InterruptedException {
+        userMigrationService.clearByMobile(mobile);
+        fixError(mobile, mobile, null, UserMigrationHolder.DEFAULT_TYPE, startUserId);
+        return "Success!";
     }
 }

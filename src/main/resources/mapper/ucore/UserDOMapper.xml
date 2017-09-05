@@ -43,4 +43,12 @@
             #{userDO.age}, #{userDO.volk}, #{userDO.createTime}, #{userDO.modifiedTime})
         </foreach>
     </insert>
+
+    <select id="selectIdByMobile" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select id from u_base where mobile = #{mobile}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from u_user where id = #{id}
+    </delete>
 </mapper>

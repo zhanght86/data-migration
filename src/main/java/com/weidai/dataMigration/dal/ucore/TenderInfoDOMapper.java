@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface TenderInfoDOMapper {
     int insertBatch(@Param("tenderInfoList") List<TenderInfoDO> tenderInfoDOList);
+
+    int deleteByUid(Integer uid);
 }

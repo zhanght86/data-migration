@@ -17,4 +17,7 @@
             #{tenderInfo.createTime}, #{tenderInfo.modifiedTime})
         </foreach>
     </insert>
+    <delete id="deleteByUid" parameterType="java.lang.Integer">
+        delete from u_tender_info where uid = #{uid}
+    </delete>
 </mapper>

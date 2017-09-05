@@ -13,4 +13,8 @@ import java.util.List;
  */
 public interface UserDOMapper {
     int insertBatchWithId(@Param("userList") List<UserDO> userList);
+
+    Integer selectIdByMobile(String mobile);
+
+    int deleteByPrimaryKey(Integer id);
 }

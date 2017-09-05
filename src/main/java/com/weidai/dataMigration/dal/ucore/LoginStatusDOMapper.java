@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface LoginStatusDOMapper {
     int insertBatch(@Param("loginStatusList") List<LoginStatusDO> loginStatusDOList);
+
+    int deleteByUserId(Integer userId);
 }

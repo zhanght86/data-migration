@@ -16,4 +16,7 @@
             (#{loginStatus.userId}, #{loginStatus.password}, #{loginStatus.salt}, #{loginStatus.createTime}, #{loginStatus.modifiedTime})
         </foreach>
     </insert>
+    <delete id="deleteByUserId" parameterType="java.lang.Integer">
+        delete from u_login_status where user_id = #{userId}
+    </delete>
 </mapper>

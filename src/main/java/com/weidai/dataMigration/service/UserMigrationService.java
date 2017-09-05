@@ -393,4 +393,29 @@ public class UserMigrationService implements MigrationService<List<UserBaseDo>>,
     public void afterPropertiesSet() throws Exception {
         executorService = FixedThreadPoolFactory.getInstance().getThreadPool(7, 15, "batch-insert-thread");
     }
+
+    /** 清除该手机号关联的相关信息
+     * @param mobile
+     */
+    public void clearByMobile(String mobile) {
+        Integer userId = userDOMapper.selectIdByMobile(mobile);
+        if (userId != null) {
+            List<UserSubAccountDO> subAccountDOList = userSubAccountDOMapper.selectByUserId(userId);
+            if (subAccountDOList != null && !subAccountDOList.isEmpty()) {
+                for (UserSubAccountDO userSubAccountDO : subAccountDOList) {
+                    if (UserTypeEnum.U_TENDER.getCode().equals(userSubAccountDO.getUserType())) {
+                        tenderInfoDOMapper.deleteByUid(userSubAccountDO.getUid());
+                    }
+                    if (UserTypeEnum.U_BORROWER.getCode().equals(userSubAccountDO.getUserType())) {
+                        borrowerInfoDOMapper.deleteByUid(userSubAccountDO.getUid());
+                    }
+                    registerInfoDOMapper.deleteByUid(userSubAccountDO.getUid());
+                    userSubAccountDOMapper.deleteByPrimaryKey(userSubAccountDO.getUid());
+                }
+            }
+            loginStatusDOMapper.deleteByUserId(userId);
+            userExtendDOMapper.deleteByPrimaryKey(userId);
+            userDOMapper.deleteByPrimaryKey(userId);
+        }
+    }
 }

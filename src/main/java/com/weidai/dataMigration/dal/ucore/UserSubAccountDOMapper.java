@@ -13,4 +13,8 @@ import java.util.List;
  */
 public interface UserSubAccountDOMapper {
     int insertBatchWithUid(@Param("userSubAccountList") List<UserSubAccountDO> userSubAccountDOList);
+
+    List<UserSubAccountDO> selectByUserId(Integer userId);
+
+    int deleteByPrimaryKey(Integer uid);
 }
