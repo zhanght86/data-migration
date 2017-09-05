@@ -83,4 +83,8 @@
             #{userExtend.createTime}, #{userExtend.modifiedTime})
         </foreach>
     </insert>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from u_user_extend where user_id = #{userId}
+    </delete>
 </mapper>

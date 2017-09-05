@@ -24,4 +24,7 @@
             #{borrowerInfo.createTime}, #{borrowerInfo.modifiedTime})
         </foreach>
     </insert>
+    <delete id="deleteByUid" parameterType="java.lang.Integer">
+        delete from u_borrower_info where uid = #{uid}
+    </delete>
 </mapper>

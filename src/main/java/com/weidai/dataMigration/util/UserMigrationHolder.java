@@ -36,9 +36,9 @@ public class UserMigrationHolder {
 
     public static volatile Integer MAX_UID;
 
-    public static volatile Integer TOTAL_PAGE;
+    public static volatile Integer TOTAL_PAGE = 0;
 
-    public static volatile Integer CURRENT_PAGE;
+    public static volatile Integer CURRENT_PAGE = 0;
 
     public static final AtomicInteger INVALID_COUNT = new AtomicInteger(0);
 
@@ -64,7 +64,7 @@ public class UserMigrationHolder {
         return CHANNEL_MAP.get(channelCode);
     }
 
-    public static boolean isLastPage(){
-        return CURRENT_PAGE == TOTAL_PAGE - 1;
+    public static boolean isLastPage() {
+        return CURRENT_PAGE == TOTAL_PAGE - 1 || CURRENT_PAGE.intValue() == TOTAL_PAGE.intValue();
     }
 }

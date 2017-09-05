@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface RegisterInfoDOMapper {
     int insertBatch(@Param("registerInfoList") List<RegisterInfoDO> registerInfoDOList);
+
+    int deleteByUid(Integer uid);
 }

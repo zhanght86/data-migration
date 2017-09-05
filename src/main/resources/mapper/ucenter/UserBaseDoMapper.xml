@@ -77,6 +77,9 @@
             <include refid="Base_Column_List"/>
         from u_base u
         where
-            u.mobile &gt;= #{startMobile} and u.mobile &lt;= #{endMobile} and u.uid &lt; #{maxUid}
+            u.mobile &gt;= #{startMobile} and u.mobile &lt;= #{endMobile}
+        <if test="maxUid != null">
+            and u.uid &lt; #{maxUid}
+        </if>
     </select>
 </mapper>

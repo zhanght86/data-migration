@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface BorrowerInfoDOMapper {
     int insertBatch(@Param("borrowerInfoList") List<BorrowerInfoDO> borrowerInfoDOList);
+
+    int deleteByUid(Integer uid);
 }

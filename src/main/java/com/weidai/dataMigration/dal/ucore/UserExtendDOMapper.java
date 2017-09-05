@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface UserExtendDOMapper {
     int insertBatchWithUserId(@Param("userExtendList") List<UserExtendDO> userExtendDOList);
+
+    int deleteByPrimaryKey(Integer userId);
 }

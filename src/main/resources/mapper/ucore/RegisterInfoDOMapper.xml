@@ -28,4 +28,7 @@
             #{registerInfo.firstReg}, #{registerInfo.regTime})
         </foreach>
     </insert>
+    <delete id="deleteByUid" parameterType="java.lang.Integer">
+        delete from u_register_info where uid = #{uid}
+    </delete>
 </mapper>
