@@ -98,8 +98,8 @@ public class JobLauncherController {
         return "Complete!";
     }
 
-    @GetMapping("/reroll")
-    public String reroll(@RequestParam("mobile") String mobile, @RequestParam(value = "startUserId", required = false) Integer startUserId)
+    @GetMapping("/reroll/{mobile}")
+    public String reroll(@PathVariable("mobile") String mobile, @RequestParam(value = "startUserId", required = false) Integer startUserId)
             throws InterruptedException {
         userMigrationService.clearByMobile(mobile);
         fixError(mobile, mobile, null, UserMigrationHolder.DEFAULT_TYPE, startUserId);

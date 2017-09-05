@@ -45,7 +45,7 @@
     </insert>
 
     <select id="selectIdByMobile" parameterType="java.lang.String" resultType="java.lang.Integer">
-        select id from u_base where mobile = #{mobile}
+        select id from u_user where mobile = #{mobile}
     </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
